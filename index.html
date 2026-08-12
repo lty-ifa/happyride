@@ -3,22 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#10253f">
+  <meta name="theme-color" content="#315f72">
   <title>司機行程助手</title>
   <style>
     :root {
-      --navy: #10253f;
-      --blue: #1d5f9e;
-      --blue-soft: #e9f3fc;
-      --green: #12835f;
-      --orange: #e66b2e;
-      --orange-soft: #fff0e8;
-      --red: #c63d3d;
-      --ink: #172333;
-      --muted: #66758a;
+      --navy: #273f4d;
+      --blue: #497a91;
+      --blue-soft: #eaf2f5;
+      --green: #3f7d70;
+      --orange: #b96f4f;
+      --orange-soft: #f8eee8;
+      --red: #a95353;
+      --yellow: #b8944f;
+      --purple: #746a88;
+      --ink: #293b45;
+      --muted: #6f7d84;
       --surface: #ffffff;
-      --bg: #f2f5f8;
-      --shadow: 0 10px 28px rgba(16, 37, 63, .09);
+      --bg: #f5f3ee;
+      --shadow: 0 8px 22px rgba(39, 63, 77, .08);
     }
 
     * { box-sizing: border-box; }
@@ -26,7 +28,7 @@
     body {
       margin: 0;
       color: var(--ink);
-      background: var(--bg);
+      background: linear-gradient(180deg, #edf2f2 0%, #f7f5f0 48%, #f3f5f3 100%);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       line-height: 1.5;
     }
@@ -36,64 +38,83 @@
     .hero {
       padding: calc(22px + env(safe-area-inset-top)) 20px 26px;
       color: #fff;
-      background: linear-gradient(145deg, #10253f 0%, #173d65 65%, #1d5f9e 100%);
+      background: linear-gradient(135deg, #315f72 0%, #3f7582 55%, #578d83 100%);
       border-radius: 0 0 28px 28px;
+      box-shadow: 0 8px 22px rgba(39, 63, 77, .16);
+      position: relative;
+      overflow: hidden;
     }
-    .eyebrow { margin: 0 0 4px; color: #a9d5ff; font-size: 13px; font-weight: 800; letter-spacing: .16em; }
-    h1 { margin: 0; font-size: clamp(28px, 7vw, 42px); line-height: 1.2; letter-spacing: -.03em; }
-    .hero p:last-child { margin: 8px 0 0; color: #d8e9fa; font-size: 15px; }
+    .hero::after { content: ""; position: absolute; width: 190px; height: 1px; right: 20px; top: 30px; background: rgba(255,255,255,.26); }
+    .eyebrow { position: relative; z-index: 1; margin: 0 0 4px; color: #dce9e7; font-size: 12px; font-weight: 800; letter-spacing: .18em; }
+    h1 { position: relative; z-index: 1; margin: 0; font-size: clamp(28px, 7vw, 42px); line-height: 1.2; letter-spacing: -.03em; text-shadow: none; }
+    .hero-subtitle { position: relative; z-index: 1; margin: 8px 0 0; color: #e4eeec; font-size: 15px; }
     main { padding: 16px; }
     .card {
       margin-bottom: 14px;
       padding: 18px;
       background: var(--surface);
-      border: 1px solid rgba(217, 226, 236, .85);
+      border: 1px solid #dce4e3;
       border-radius: 20px;
       box-shadow: var(--shadow);
     }
+    main > .card:nth-child(1) { border-top: 4px solid #746a88; }
+    main > .card:nth-child(2) { border-top: 4px solid #497a91; }
+    main > .card:nth-child(3) { border-top: 4px solid #b96f4f; }
+    main > .card:nth-child(4) { border-top: 4px solid #3f7d70; }
     .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    h2 { margin: 0; color: var(--navy); font-size: 19px; }
-    .badge { padding: 4px 9px; color: var(--blue); background: var(--blue-soft); border-radius: 99px; font-size: 12px; font-weight: 800; }
+    h2 { margin: 0; color: var(--navy); font-size: 19px; letter-spacing: .01em; }
+    .badge { padding: 5px 10px; color: #3d6678; background: #edf3f4; border: 1px solid #cfdddf; border-radius: 99px; font-size: 12px; font-weight: 800; }
     label { display: block; margin-bottom: 6px; color: #4d5d70; font-size: 13px; font-weight: 800; }
     input {
       width: 100%; min-height: 48px; padding: 11px 13px;
-      color: var(--ink); background: #fbfcfd;
-      border: 1px solid #cbd7e3; border-radius: 12px; outline: none;
+      color: var(--ink); background: #fcfdfc;
+      border: 1px solid #cbd7d8; border-radius: 12px; outline: none;
     }
-    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 95, 158, .13); }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(73, 122, 145, .13); background: #fff; }
     input[type="number"] { text-align: right; }
     .field { margin-bottom: 14px; }
     .input-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
     .wait-start { min-width: 82px; padding-inline: 12px; }
     .route-line { position: relative; padding-left: 22px; }
-    .route-line::before { content: ""; position: absolute; top: 16px; bottom: 19px; left: 5px; width: 2px; background: #d6e5f2; }
+    .route-line::before { content: ""; position: absolute; top: 16px; bottom: 19px; left: 5px; width: 2px; background: #cbdcdd; border-radius: 9px; }
     .route-point { position: relative; }
     .route-point::before { content: ""; position: absolute; left: -21px; top: 37px; width: 10px; height: 10px; border: 3px solid #fff; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
     .route-point.destination::before { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
-    .stop-item { margin-bottom: 13px; padding: 12px; background: #f6f9fc; border: 1px solid #e1e8f0; border-radius: 14px; }
+    .stop-item { margin-bottom: 13px; padding: 12px; background: #f3f7f7; border: 1px solid #d8e3e3; border-radius: 14px; }
     .stop-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .stop-title strong { font-size: 13px; }
     .stop-tools { display: flex; gap: 6px; }
-    .icon-btn { width: 38px; min-height: 38px; padding: 0; color: var(--blue); background: #fff; border: 1px solid #cad7e4; border-radius: 10px; font-weight: 900; }
+    .icon-btn { width: 38px; min-height: 38px; padding: 0; color: var(--blue); background: #eef4f9; border: 1px solid #cad7e4; border-radius: 10px; box-shadow: none; font-weight: 900; cursor: pointer; transition: filter .12s, opacity .12s; }
+    .icon-btn:active:not(:disabled) { filter: brightness(.92); }
+    .icon-btn:disabled { opacity: .38; cursor: not-allowed; box-shadow: none; }
     .icon-btn.danger { color: var(--red); }
     .btn {
-      min-height: 46px; padding: 10px 16px; border: 0; border-radius: 12px;
-      font-weight: 850; cursor: pointer; transition: transform .15s, opacity .15s;
+      min-height: 46px; padding: 10px 16px;
+      border: 1px solid rgba(255, 255, 255, .34); border-radius: 12px;
+      box-shadow: none;
+      font-weight: 850; cursor: pointer;
+      transition: filter .12s ease, opacity .12s;
     }
-    .btn:active { transform: scale(.98); }
-    .btn:disabled { cursor: not-allowed; opacity: .45; }
-    .btn-primary { color: #fff; background: var(--blue); }
-    .btn-green { color: #fff; background: var(--green); }
+    .btn:hover:not(:disabled) { filter: brightness(1.04); }
+    .btn:active:not(:disabled) { filter: brightness(.9); }
+    .btn:disabled { cursor: not-allowed; opacity: .45; box-shadow: none; }
+    .btn-primary { color: #fff; background: #497a91; border-color: #497a91; }
+    .btn-green { color: #fff; background: #3f7d70; border-color: #3f7d70; }
     .btn-danger { color: #fff; background: var(--red); }
-    .btn-ghost { color: var(--blue); background: var(--blue-soft); }
+    .btn-ghost { color: #3d697c; background: #edf3f5; border-color: #c9dadd; }
     .btn-line { color: #fff; background: #06c755; }
     .wide { width: 100%; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
     .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .status-btn { min-width: 0; padding-inline: 4px; color: var(--navy); background: #eef3f8; border: 1px solid #d6e0ea; font-size: 18px; }
+    .status-btn { min-width: 0; padding-inline: 4px; color: var(--navy); background: #f4f8fb; border-color: #d3e1e9; font-size: 18px; text-shadow: none; }
+    .status-btn:nth-child(1) { color: #326f62; background: #eaf3ef; border-color: #afccc2; }
+    .status-btn:nth-child(2) { color: #3e6d83; background: #eaf1f4; border-color: #b2cad4; }
+    .status-btn:nth-child(3) { color: #6c617d; background: #f0edf3; border-color: #c9c0d2; }
+    .status-btn:nth-child(4) { color: #9b5e43; background: #f7eee9; border-color: #d9b8a8; }
+    .status-btn:nth-child(5) { color: #984b4b; background: #f6ebeb; border-color: #d7afaf; }
     .status-btn.help { font-size: 15px; }
-    .waiting-panel { display: none; padding: 16px; border: 1px solid #f6bf96; border-radius: 16px; background: var(--orange-soft); }
+    .waiting-panel { display: none; padding: 16px; border: 1px solid #d9b8a4; border-radius: 16px; background: #f8efe9; }
     .waiting-panel.show { display: block; }
     .waiting-label { color: #9a441e; font-size: 12px; font-weight: 900; letter-spacing: .08em; }
     .waiting-address { margin: 4px 0; font-weight: 800; overflow-wrap: anywhere; }
@@ -102,14 +123,14 @@
     .fare-placeholder { padding: 20px 8px; text-align: center; color: var(--muted); }
     .result { display: none; }
     .result.show { display: block; }
-    .fare-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 16px; color: #fff; background: linear-gradient(135deg, #12835f, #0d684c); border-radius: 16px; }
+    .fare-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 16px; color: #fff; background: linear-gradient(135deg, #376f64, #4f8a7d); border-radius: 16px; }
     .fare-hero span { font-size: 13px; font-weight: 800; }
     .fare-hero strong { font-size: 38px; line-height: 1; }
     .fare-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin: 12px 0; }
-    .metric { padding: 12px; background: #f3f7fa; border-radius: 12px; }
+    .metric { padding: 12px; background: #f0f5f4; border: 1px solid #dce7e5; border-radius: 12px; }
     .metric span { display: block; color: var(--muted); font-size: 12px; }
     .metric strong { display: block; margin-top: 2px; font-size: 18px; }
-    .formula { margin: 0 0 12px; padding: 12px; color: #44566b; background: #f8fafc; border-left: 4px solid var(--blue); border-radius: 8px; font-size: 13px; }
+    .formula { margin: 0 0 12px; padding: 12px; color: #495b62; background: #f7f3e9; border-left: 4px solid var(--yellow); border-radius: 8px; font-size: 13px; }
     .over-limit { color: #9a441e; background: var(--orange-soft); border-left-color: var(--orange); }
     .toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 20; width: min(calc(100% - 32px), 500px); padding: 12px 16px; color: #fff; background: rgba(22, 35, 51, .96); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.22); text-align: center; transform: translate(-50%, 130%); transition: transform .25s; }
     .toast.show { transform: translate(-50%, 0); }
@@ -130,10 +151,25 @@
     <header class="hero">
       <p class="eyebrow">DRIVER TOOL</p>
       <h1>司機行程助手</h1>
-      <p>路線、車資、待時與回報，一頁完成。</p>
+      <p class="hero-subtitle">路線、車資、待時與回報，一頁完成。</p>
     </header>
 
     <main>
+      <section class="card" aria-labelledby="statusTitle">
+        <div class="card-head">
+          <h2 id="statusTitle">司機狀態</h2>
+          <span class="badge">開啟 LINE 分享</span>
+        </div>
+        <div class="status-grid">
+          <button class="btn status-btn" type="button" data-status="到" data-address="pickup">到</button>
+          <button class="btn status-btn" type="button" data-status="通" data-address="pickup">通</button>
+          <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup">幫通</button>
+          <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route">上</button>
+          <button class="btn status-btn" type="button" data-status="客下" data-address="destination">下</button>
+        </div>
+        <p class="hint">按下後由你在 LINE 選擇群組並確認傳送；此頁不會記錄傳送結果。</p>
+      </section>
+
       <section class="card" aria-labelledby="routeTitle">
         <div class="card-head">
           <h2 id="routeTitle">本趟行程</h2>
@@ -167,25 +203,14 @@
           <p class="hint">回到本頁輸入公里數，系統會無條件進位後計價。</p>
         </div>
         <div class="field">
+          <label for="waitingFee">待時費（手動輸入，併入本趟車資）</label>
+          <input id="waitingFee" type="number" min="0" step="1" inputmode="numeric" value="0">
+        </div>
+        <div class="field">
           <label for="tip">小費（獨立紀錄，不併入車資）</label>
           <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
         </div>
         <button id="calculate" class="btn btn-primary wide" type="button">計算車資</button>
-      </section>
-
-      <section class="card" aria-labelledby="statusTitle">
-        <div class="card-head">
-          <h2 id="statusTitle">司機狀態</h2>
-          <span class="badge">開啟 LINE 分享</span>
-        </div>
-        <div class="status-grid">
-          <button class="btn status-btn" type="button" data-status="到" data-address="pickup">到</button>
-          <button class="btn status-btn" type="button" data-status="通" data-address="pickup">通</button>
-          <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup">幫通</button>
-          <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route">上</button>
-          <button class="btn status-btn" type="button" data-status="客下" data-address="destination">下</button>
-        </div>
-        <p class="hint">按下後由你在 LINE 選擇群組並確認傳送；此頁不會記錄傳送結果。</p>
       </section>
 
       <section class="card" aria-labelledby="waitingTitle">
@@ -210,13 +235,14 @@
         <div id="fareEmpty" class="fare-placeholder">輸入 Google Maps 顯示的公里數後計算車資</div>
         <div id="fareResult" class="result" aria-live="polite">
           <div class="fare-hero">
-            <span id="fareLabel">本趟車資</span>
+            <span id="fareLabel">本趟車資（含長途、待時費）</span>
             <strong id="fareAmount">$0</strong>
           </div>
           <div class="fare-meta">
-            <div class="metric"><span>手動輸入距離</span><strong id="actualDistance">—</strong></div>
+            <div class="metric"><span>未加價車資</span><strong id="baseFareResult">—</strong></div>
             <div class="metric"><span>計費公里</span><strong id="billingDistance">—</strong></div>
             <div class="metric"><span>長途加價</span><strong id="surcharge">—</strong></div>
+            <div class="metric"><span>待時費</span><strong id="waitingFeeResult">$0</strong></div>
             <div class="metric"><span>小費（另計）</span><strong id="tipResult">$0</strong></div>
           </div>
           <p id="fareFormula" class="formula"></p>
@@ -340,6 +366,14 @@
         return tip;
       }
 
+      function validateWaitingFee() {
+        const input = $('#waitingFee');
+        const numeric = Number(input.value);
+        const fee = Number.isFinite(numeric) ? Math.max(0, Math.floor(numeric)) : 0;
+        input.value = String(fee);
+        return fee;
+      }
+
       function calculateManualFare() {
         const input = $('#manualDistance');
         const actualKm = Number(input.value);
@@ -354,25 +388,29 @@
 
       function renderFare(actualKm) {
         const info = calculateFareFromKm(actualKm);
+        const waitingFee = validateWaitingFee();
         const tip = validateTip();
         $('#fareEmpty').style.display = 'none';
         $('#fareResult').classList.add('show');
-        $('#actualDistance').textContent = `${actualKm.toFixed(1)} km`;
         $('#billingDistance').textContent = `${info.billingKm} km`;
+        $('#waitingFeeResult').textContent = `$${waitingFee}`;
         $('#tipResult').textContent = `$${tip}`;
         const formula = $('#fareFormula');
         if (info.overLimit) {
           $('#fareLabel').textContent = '超過自動計價範圍';
           $('#fareAmount').textContent = '人工報價';
+          $('#baseFareResult').textContent = '—';
           $('#surcharge').textContent = '—';
           formula.textContent = `計費距離 ${info.billingKm} 公里，超過 29 公里，請由司機人工報價。`;
           formula.classList.add('over-limit');
         } else {
-          $('#fareLabel').textContent = '本趟車資';
-          $('#fareAmount').textContent = `$${info.fare}`;
+          const totalFare = info.fare + waitingFee;
+          $('#fareLabel').textContent = '本趟車資（含長途、待時費）';
+          $('#fareAmount').textContent = `$${totalFare}`;
+          $('#baseFareResult').textContent = `$${info.baseFare}`;
           $('#surcharge').textContent = `$${info.surcharge}`;
           const baseText = info.billingKm <= 3 ? '3 公里內基本車資 $100' : `$100＋(${info.billingKm}－3)×$20`;
-          formula.textContent = `${baseText}${info.surcharge ? `＋長途加價 $${info.surcharge}` : ''}＝$${info.fare}；小費 $${tip} 另計。`;
+          formula.textContent = `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；＋待時費 $${waitingFee}；本趟車資＝$${totalFare}。小費 $${tip} 另計。`;
           formula.classList.remove('over-limit');
         }
       }
@@ -402,8 +440,9 @@
           toast('超過 29 公里，請先人工確認車資');
           return;
         }
+        const waitingFee = validateWaitingFee();
         const tip = validateTip();
-        openLineShare(`${actualKm}公里/${info.fare}元/${tip}元`);
+        openLineShare(`${actualKm}公里/${info.fare + waitingFee}元/${tip}元`);
       }
 
       function shareStatus(button) {
@@ -498,6 +537,7 @@
         $('#pickup').value = '';
         $('#destination').value = '';
         $('#manualDistance').value = '';
+        $('#waitingFee').value = '0';
         $('#tip').value = '0';
         $('#stops').innerHTML = '';
         renumberStops();
@@ -513,6 +553,11 @@
       $('#recalculate').addEventListener('click', calculateManualFare);
       $('#navigate').addEventListener('click', openNavigation);
       $('#shareFare').addEventListener('click', shareFareReport);
+      $('#waitingFee').addEventListener('change', () => {
+        validateWaitingFee();
+        const distance = Number($('#manualDistance').value);
+        if ($('#manualDistance').value.trim() !== '' && Number.isFinite(distance) && distance >= 0) renderFare(distance);
+      });
       $('#tip').addEventListener('change', () => {
         validateTip();
         const distance = Number($('#manualDistance').value);
