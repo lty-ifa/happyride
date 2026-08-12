@@ -18,7 +18,7 @@
       --purple: #746a88;
       --ink: #293b45;
       --muted: #6f7d84;
-      --surface: #ffffff;
+      --surface: #f7f4ed;
       --bg: #f5f3ee;
       --shadow: 0 8px 22px rgba(39, 63, 77, .08);
     }
@@ -28,7 +28,13 @@
     body {
       margin: 0;
       color: var(--ink);
-      background: linear-gradient(180deg, #edf2f2 0%, #f7f5f0 48%, #f3f5f3 100%);
+      background-color: #f4f1e8;
+      background-image:
+        linear-gradient(rgba(250, 249, 245, .34), rgba(250, 249, 245, .34)),
+        url('page-background-retro.jpg');
+      background-position: center top;
+      background-size: 100% auto;
+      background-repeat: repeat-y;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       line-height: 1.5;
     }
@@ -38,7 +44,9 @@
     .hero {
       padding: calc(22px + env(safe-area-inset-top)) 20px 26px;
       color: #fff;
-      background: linear-gradient(135deg, #315f72 0%, #3f7582 55%, #578d83 100%);
+      background:
+        linear-gradient(90deg, rgba(18, 58, 65, .42) 0%, rgba(18, 58, 65, .16) 48%, rgba(18, 58, 65, .02) 100%),
+        url('hero-driver-retro.jpg') center 52% / cover no-repeat;
       border-radius: 0 0 28px 28px;
       box-shadow: 0 8px 22px rgba(39, 63, 77, .16);
       position: relative;
@@ -53,22 +61,24 @@
       margin-bottom: 14px;
       padding: 18px;
       background: var(--surface);
-      border: 1px solid #dce4e3;
+      border: 1px solid #dedbd2;
       border-radius: 20px;
       box-shadow: var(--shadow);
     }
-    main > .card:nth-child(1) { border-top: 4px solid #746a88; }
-    main > .card:nth-child(2) { border-top: 4px solid #497a91; }
-    main > .card:nth-child(3) { border-top: 4px solid #b96f4f; }
-    main > .card:nth-child(4) { border-top: 4px solid #3f7d70; }
+    main > .card:nth-child(1) { background: #f1eef0; border-color: #d8d0d6; border-top: 4px solid #746a88; }
+    main > .card:nth-child(2) { background: #edf3f2; border-color: #cedddb; border-top: 4px solid #497a91; }
+    main > .card:nth-child(3) { background: #f6eee7; border-color: #e2d2c6; border-top: 4px solid #b96f4f; }
+    main > .card:nth-child(4) { background: #eef3eb; border-color: #d2ddcd; border-top: 4px solid #72866b; }
+    main > .card:nth-child(5) { background: #edf2ef; border-color: #cfdcd6; border-top: 4px solid #3f7d70; }
+    main > .card:nth-child(6) { background: #f4f0e8; border-color: #ddd5c8; }
     .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     h2 { margin: 0; color: var(--navy); font-size: 19px; letter-spacing: .01em; }
-    .badge { padding: 5px 10px; color: #3d6678; background: #edf3f4; border: 1px solid #cfdddf; border-radius: 99px; font-size: 12px; font-weight: 800; }
+    .badge { padding: 5px 10px; color: #455f66; background: rgba(255, 253, 248, .62); border: 1px solid rgba(91, 113, 112, .24); border-radius: 99px; font-size: 12px; font-weight: 800; }
     label { display: block; margin-bottom: 6px; color: #4d5d70; font-size: 13px; font-weight: 800; }
     input {
       width: 100%; min-height: 48px; padding: 11px 13px;
-      color: var(--ink); background: #fcfdfc;
-      border: 1px solid #cbd7d8; border-radius: 12px; outline: none;
+      color: var(--ink); background: #fffdf8;
+      border: 1px solid #c9d4d1; border-radius: 12px; outline: none;
     }
     input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(73, 122, 145, .13); background: #fff; }
     input[type="number"] { text-align: right; }
@@ -80,7 +90,7 @@
     .route-point { position: relative; }
     .route-point::before { content: ""; position: absolute; left: -21px; top: 37px; width: 10px; height: 10px; border: 3px solid #fff; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
     .route-point.destination::before { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
-    .stop-item { margin-bottom: 13px; padding: 12px; background: #f3f7f7; border: 1px solid #d8e3e3; border-radius: 14px; }
+    .stop-item { margin-bottom: 13px; padding: 12px; background: #e4eeeb; border: 1px solid #cbdcd7; border-radius: 14px; }
     .stop-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
     .stop-title strong { font-size: 13px; }
     .stop-tools { display: flex; gap: 6px; }
@@ -115,7 +125,7 @@
     .status-btn:nth-child(5) { color: #7d2929; background: #f6ebeb; border-color: #c98d8d; }
     .status-btn:disabled { opacity: .72; }
     .status-btn.help { font-size: 24px; }
-    .waiting-panel { display: none; padding: 16px; border: 1px solid #d9b8a4; border-radius: 16px; background: #f8efe9; }
+    .waiting-panel { display: none; padding: 16px; border: 1px solid #d5c4ad; border-radius: 16px; background: #f5ecdf; }
     .waiting-panel.show { display: block; }
     .waiting-label { color: #9a441e; font-size: 12px; font-weight: 900; letter-spacing: .08em; }
     .waiting-address { margin: 4px 0; font-weight: 800; overflow-wrap: anywhere; }
@@ -128,7 +138,7 @@
     .fare-hero span { font-size: 13px; font-weight: 800; }
     .fare-hero strong { font-size: 38px; line-height: 1; }
     .fare-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin: 12px 0; }
-    .metric { padding: 12px; background: #f0f5f4; border: 1px solid #dce7e5; border-radius: 12px; }
+    .metric { padding: 12px; background: #f8f5ed; border: 1px solid #d9dfd8; border-radius: 12px; }
     .metric span { display: block; color: var(--muted); font-size: 12px; }
     .metric strong { display: block; margin-top: 2px; font-size: 18px; }
     .formula { margin: 0 0 12px; padding: 12px; color: #495b62; background: #f7f3e9; border-left: 4px solid var(--yellow); border-radius: 8px; font-size: 13px; }
@@ -137,6 +147,7 @@
     .toast.show { transform: translate(-50%, 0); }
     .footer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 430px) {
+      .hero { background-position: center, 58% 52%; }
       main { padding: 12px; }
       .card { padding: 15px; border-radius: 17px; }
       .status-grid { grid-template-columns: .82fr .82fr 1.42fr .82fr .82fr; gap: 5px; }
