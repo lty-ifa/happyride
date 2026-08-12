@@ -31,7 +31,7 @@
       background-color: #f4f1e8;
       background-image:
         linear-gradient(rgba(250, 249, 245, .34), rgba(250, 249, 245, .34)),
-        url('page-background-retro.jpg');
+        url('page-background-retro.jpg?v=20260813-2');
       background-position: center top;
       background-size: 100% auto;
       background-repeat: repeat-y;
@@ -147,6 +147,15 @@
     .toast.show { transform: translate(-50%, 0); }
     .footer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 430px) {
+      body {
+        background-color: #f4f1e8;
+        background-image:
+          linear-gradient(rgba(250, 249, 245, .28), rgba(250, 249, 245, .28)),
+          url('page-background-retro.jpg?v=20260813-2');
+        background-position: center top;
+        background-size: 100% auto;
+        background-repeat: repeat-y;
+      }
       .hero { background-position: center, 58% 52%; }
       main { padding: 12px; }
       .card { padding: 15px; border-radius: 17px; }
