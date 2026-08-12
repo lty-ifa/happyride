@@ -67,8 +67,8 @@
     }
     main > .card:nth-child(1) { background: #f1eef0; border-color: #d8d0d6; border-top: 4px solid #746a88; }
     main > .card:nth-child(2) { background: #edf3f2; border-color: #cedddb; border-top: 4px solid #497a91; }
-    main > .card:nth-child(3) { background: #f6eee7; border-color: #e2d2c6; border-top: 4px solid #b96f4f; }
-    main > .card:nth-child(4) { background: #eef3eb; border-color: #d2ddcd; border-top: 4px solid #72866b; }
+    main > .card:nth-child(3) { background: #eef3eb; border-color: #d2ddcd; border-top: 4px solid #72866b; }
+    main > .card:nth-child(4) { background: #f6eee7; border-color: #e2d2c6; border-top: 4px solid #b96f4f; }
     main > .card:nth-child(5) { background: #edf2ef; border-color: #cfdcd6; border-top: 4px solid #3f7d70; }
     main > .card:nth-child(6) { background: #f4f0e8; border-color: #ddd5c8; }
     .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -217,27 +217,6 @@
         <button id="calculateInitial" class="btn btn-primary wide" type="button">計算初步車資</button>
       </section>
 
-      <section class="card" aria-labelledby="extrasTitle">
-        <div class="card-head">
-          <h2 id="extrasTitle">其他車資加成</h2>
-          <span class="badge">人工調整</span>
-        </div>
-        <div class="field">
-          <label for="waitingFee">待時費（手動輸入，併入本趟車資）</label>
-          <input id="waitingFee" type="number" min="0" step="1" inputmode="numeric" value="0">
-        </div>
-        <div class="field">
-          <label for="tip">小費（獨立紀錄，不併入車資）</label>
-          <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
-        </div>
-        <div class="two-col" style="margin-bottom:12px">
-          <button id="addTemporaryStop" class="btn btn-ghost" type="button">臨停地點＋20</button>
-          <button id="resetTemporaryStop" class="btn btn-ghost" type="button">臨停歸零</button>
-        </div>
-        <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0</p>
-        <button id="calculateFinal" class="btn btn-primary wide" type="button">計算最終車資</button>
-      </section>
-
       <section class="card" aria-labelledby="waitingTitle">
         <div class="card-head">
           <h2 id="waitingTitle">待時計時</h2>
@@ -253,6 +232,29 @@
             <button id="stopWaiting" class="btn btn-danger" type="button">停止</button>
           </div>
         </div>
+      </section>
+
+      <section class="card" aria-labelledby="extrasTitle">
+        <div class="card-head">
+          <h2 id="extrasTitle">其他車資加成</h2>
+          <span class="badge">人工調整</span>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="waitingFee">待時費（併入車資）</label>
+            <input id="waitingFee" type="number" min="0" step="1" inputmode="numeric" value="0">
+          </div>
+          <div class="field">
+            <label for="tip">小費（獨立另計）</label>
+            <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
+          </div>
+        </div>
+        <div class="two-col" style="margin-bottom:12px">
+          <button id="addTemporaryStop" class="btn btn-ghost" type="button">臨停地點＋20</button>
+          <button id="resetTemporaryStop" class="btn btn-ghost" type="button">臨停歸零</button>
+        </div>
+        <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0</p>
+        <button id="calculateFinal" class="btn btn-primary wide" type="button">計算最終車資</button>
       </section>
 
       <section class="card" aria-labelledby="fareTitle">
