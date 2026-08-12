@@ -182,8 +182,8 @@
           <button class="btn status-btn" type="button" data-status="到" data-address="pickup">到</button>
           <button class="btn status-btn" type="button" data-status="通" data-address="pickup">通</button>
           <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup">幫通</button>
-          <button class="btn status-btn" type="button" data-status="上" data-address="destination">上</button>
-          <button class="btn status-btn" type="button" data-status="下" data-address="destination">下</button>
+          <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route">上</button>
+          <button class="btn status-btn" type="button" data-status="客下" data-address="destination">下</button>
         </div>
         <p class="hint">按下後由你在 LINE 選擇群組並確認傳送；此頁不會記錄傳送結果。</p>
       </section>
@@ -220,6 +220,7 @@
             <div class="metric"><span>小費（另計）</span><strong id="tipResult">$0</strong></div>
           </div>
           <p id="fareFormula" class="formula"></p>
+          <button id="shareFare" class="btn btn-line wide" type="button" style="margin-bottom:10px">車資回報</button>
           <div class="two-col">
             <button id="navigate" class="btn btn-green" type="button">再次開啟地圖</button>
             <button id="recalculate" class="btn btn-ghost" type="button">重新計算</button>
@@ -388,10 +389,36 @@
         window.open(`https://line.me/R/share?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
       }
 
+      function shareFareReport() {
+        const distanceInput = $('#manualDistance');
+        const actualKm = Number(distanceInput.value);
+        if (distanceInput.value.trim() === '' || !Number.isFinite(actualKm) || actualKm < 0) {
+          toast('請先輸入公里數並計算車資');
+          distanceInput.focus();
+          return;
+        }
+        const info = calculateFareFromKm(actualKm);
+        if (info.overLimit) {
+          toast('超過 29 公里，請先人工確認車資');
+          return;
+        }
+        const tip = validateTip();
+        openLineShare(`${actualKm}公里/${info.fare}元/${tip}元`);
+      }
+
       function shareStatus(button) {
         const address = cleanAddress($(`#${button.dataset.address}`).value);
         if (!address) { toast(`請先輸入${button.dataset.address === 'pickup' ? '上車' : '下車'}地址`); return; }
-        openLineShare(`${button.dataset.status}｜${address}`);
+        let message;
+        if (button.dataset.compose === 'route') {
+          const stops = getStops();
+          message = stops.length
+            ? `客上｜去${stops.join('、')}到${address}`
+            : `客上｜去${address}`;
+        } else {
+          message = `${button.dataset.status}｜${address}`;
+        }
+        openLineShare(message);
       }
 
       function getWaitingMinutes(startedAt, stoppedAt = Date.now()) {
@@ -485,6 +512,7 @@
       $('#calculate').addEventListener('click', calculateManualFare);
       $('#recalculate').addEventListener('click', calculateManualFare);
       $('#navigate').addEventListener('click', openNavigation);
+      $('#shareFare').addEventListener('click', shareFareReport);
       $('#tip').addEventListener('change', () => {
         validateTip();
         const distance = Number($('#manualDistance').value);
