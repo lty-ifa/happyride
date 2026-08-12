@@ -106,14 +106,15 @@
     .wide { width: 100%; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
-    .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .status-btn { min-width: 0; padding-inline: 4px; color: var(--navy); background: #f4f8fb; border-color: #d3e1e9; font-size: 18px; text-shadow: none; }
-    .status-btn:nth-child(1) { color: #326f62; background: #eaf3ef; border-color: #afccc2; }
-    .status-btn:nth-child(2) { color: #3e6d83; background: #eaf1f4; border-color: #b2cad4; }
-    .status-btn:nth-child(3) { color: #6c617d; background: #f0edf3; border-color: #c9c0d2; }
-    .status-btn:nth-child(4) { color: #9b5e43; background: #f7eee9; border-color: #d9b8a8; }
-    .status-btn:nth-child(5) { color: #984b4b; background: #f6ebeb; border-color: #d7afaf; }
-    .status-btn.help { font-size: 15px; }
+    .status-grid { display: grid; grid-template-columns: .86fr .86fr 1.32fr .86fr .86fr; gap: 8px; }
+    .status-btn { min-width: 0; min-height: 56px; padding-inline: 4px; color: var(--navy); background: #f4f8fb; border-color: #d3e1e9; font-size: 24px; font-weight: 950; line-height: 1; text-shadow: none; }
+    .status-btn:nth-child(1) { color: #155846; background: #eaf3ef; border-color: #88b8a8; }
+    .status-btn:nth-child(2) { color: #174f69; background: #eaf1f4; border-color: #8eb5c5; }
+    .status-btn:nth-child(3) { color: #514260; background: #f0edf3; border-color: #ab9bb8; }
+    .status-btn:nth-child(4) { color: #793d23; background: #f7eee9; border-color: #c79a85; }
+    .status-btn:nth-child(5) { color: #7d2929; background: #f6ebeb; border-color: #c98d8d; }
+    .status-btn:disabled { opacity: .72; }
+    .status-btn.help { font-size: 24px; }
     .waiting-panel { display: none; padding: 16px; border: 1px solid #d9b8a4; border-radius: 16px; background: #f8efe9; }
     .waiting-panel.show { display: block; }
     .waiting-label { color: #9a441e; font-size: 12px; font-weight: 900; letter-spacing: .08em; }
@@ -138,9 +139,9 @@
     @media (max-width: 430px) {
       main { padding: 12px; }
       .card { padding: 15px; border-radius: 17px; }
-      .status-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
-      .status-btn { min-height: 50px; font-size: 17px; }
-      .status-btn.help { font-size: 13px; }
+      .status-grid { grid-template-columns: .82fr .82fr 1.42fr .82fr .82fr; gap: 5px; }
+      .status-btn { min-height: 56px; font-size: 22px; }
+      .status-btn.help { font-size: 22px; }
       .input-actions { grid-template-columns: minmax(0, 1fr) 74px; }
       .wait-start { min-width: 0; padding-inline: 5px; font-size: 13px; }
     }
@@ -161,13 +162,13 @@
           <span class="badge">開啟 LINE 分享</span>
         </div>
         <div class="status-grid">
-          <button class="btn status-btn" type="button" data-status="到" data-address="pickup">到</button>
-          <button class="btn status-btn" type="button" data-status="通" data-address="pickup">通</button>
-          <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup">幫通</button>
-          <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route">上</button>
-          <button class="btn status-btn" type="button" data-status="客下" data-address="destination">下</button>
+          <button class="btn status-btn" type="button" data-status="到" data-address="pickup" disabled>到</button>
+          <button class="btn status-btn" type="button" data-status="通" data-address="pickup" disabled>通</button>
+          <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup" disabled>幫通</button>
+          <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route" disabled>上</button>
+          <button class="btn status-btn" type="button" data-status="客下" data-address="destination" disabled>下</button>
         </div>
-        <p class="hint">按下後由你在 LINE 選擇群組並確認傳送；此頁不會記錄傳送結果。</p>
+        <p class="hint">輸入上車地點即可使用「到／通／幫通」；輸入下車地點後可使用「上／下」。不必完成公里數或車資。</p>
       </section>
 
       <section class="card" aria-labelledby="routeTitle">
@@ -202,6 +203,14 @@
           <input id="manualDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="例如：12.6">
           <p class="hint">回到本頁輸入公里數，系統會無條件進位後計價。</p>
         </div>
+        <button id="calculateInitial" class="btn btn-primary wide" type="button">計算初步車資</button>
+      </section>
+
+      <section class="card" aria-labelledby="extrasTitle">
+        <div class="card-head">
+          <h2 id="extrasTitle">其他車資加成</h2>
+          <span class="badge">人工調整</span>
+        </div>
         <div class="field">
           <label for="waitingFee">待時費（手動輸入，併入本趟車資）</label>
           <input id="waitingFee" type="number" min="0" step="1" inputmode="numeric" value="0">
@@ -210,7 +219,12 @@
           <label for="tip">小費（獨立紀錄，不併入車資）</label>
           <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
         </div>
-        <button id="calculate" class="btn btn-primary wide" type="button">計算車資</button>
+        <div class="two-col" style="margin-bottom:12px">
+          <button id="addTemporaryStop" class="btn btn-ghost" type="button">臨停地點＋20</button>
+          <button id="resetTemporaryStop" class="btn btn-ghost" type="button">臨停歸零</button>
+        </div>
+        <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0</p>
+        <button id="calculateFinal" class="btn btn-primary wide" type="button">計算最終車資</button>
       </section>
 
       <section class="card" aria-labelledby="waitingTitle">
@@ -232,10 +246,10 @@
 
       <section class="card" aria-labelledby="fareTitle">
         <div class="card-head"><h2 id="fareTitle">車資結果</h2></div>
-        <div id="fareEmpty" class="fare-placeholder">輸入 Google Maps 顯示的公里數後計算車資</div>
+        <div id="fareEmpty" class="fare-placeholder">先計算初步車資，再視需要加入其他車資加成</div>
         <div id="fareResult" class="result" aria-live="polite">
           <div class="fare-hero">
-            <span id="fareLabel">本趟車資（含長途、待時費）</span>
+            <span id="fareLabel">本趟車資（含長途、待時、臨停費）</span>
             <strong id="fareAmount">$0</strong>
           </div>
           <div class="fare-meta">
@@ -243,13 +257,14 @@
             <div class="metric"><span>計費公里</span><strong id="billingDistance">—</strong></div>
             <div class="metric"><span>長途加價</span><strong id="surcharge">—</strong></div>
             <div class="metric"><span>待時費</span><strong id="waitingFeeResult">$0</strong></div>
+            <div class="metric"><span>臨停費</span><strong id="temporaryStopFeeResult">$0</strong></div>
             <div class="metric"><span>小費（另計）</span><strong id="tipResult">$0</strong></div>
           </div>
           <p id="fareFormula" class="formula"></p>
           <button id="shareFare" class="btn btn-line wide" type="button" style="margin-bottom:10px">車資回報</button>
           <div class="two-col">
             <button id="navigate" class="btn btn-green" type="button">再次開啟地圖</button>
-            <button id="recalculate" class="btn btn-ghost" type="button">重新計算</button>
+            <button id="recalculate" class="btn btn-ghost" type="button">更新最終車資</button>
           </div>
         </div>
       </section>
@@ -275,7 +290,8 @@
         stopId: 0,
         activeWaiting: null,
         stoppedWaiting: null,
-        waitingTimer: null
+        waitingTimer: null,
+        temporaryStopCount: 0
       };
 
       const $ = (selector, root = document) => root.querySelector(selector);
@@ -374,26 +390,51 @@
         return fee;
       }
 
-      function calculateManualFare() {
+      function getEnteredDistance() {
         const input = $('#manualDistance');
         const actualKm = Number(input.value);
         if (input.value.trim() === '' || !Number.isFinite(actualKm) || actualKm < 0) {
           toast('請輸入 Google Maps 顯示的公里數');
           input.focus();
-          return;
+          return null;
         }
-        renderFare(actualKm);
+        return actualKm;
+      }
+
+      function calculateInitialFare() {
+        const actualKm = getEnteredDistance();
+        if (actualKm === null) return;
+        renderFare(actualKm, false);
         $('#fareTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      function renderFare(actualKm) {
+      function calculateFinalFare() {
+        const actualKm = getEnteredDistance();
+        if (actualKm === null) return;
+        renderFare(actualKm, true);
+        $('#fareTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function getTemporaryStopFee() {
+        return state.temporaryStopCount * 20;
+      }
+
+      function updateTemporaryStops(change) {
+        state.temporaryStopCount = Math.max(0, state.temporaryStopCount + change);
+        const fee = getTemporaryStopFee();
+        $('#temporaryStopSummary').textContent = `第 3 個地點起，每增加 1 個地點＋$20。目前 ${state.temporaryStopCount} 個，共 $${fee}`;
+      }
+
+      function renderFare(actualKm, includeExtras) {
         const info = calculateFareFromKm(actualKm);
         const waitingFee = validateWaitingFee();
+        const temporaryStopFee = getTemporaryStopFee();
         const tip = validateTip();
         $('#fareEmpty').style.display = 'none';
         $('#fareResult').classList.add('show');
         $('#billingDistance').textContent = `${info.billingKm} km`;
-        $('#waitingFeeResult').textContent = `$${waitingFee}`;
+        $('#waitingFeeResult').textContent = includeExtras ? `$${waitingFee}` : '尚未加入';
+        $('#temporaryStopFeeResult').textContent = includeExtras ? `$${temporaryStopFee}` : '尚未加入';
         $('#tipResult').textContent = `$${tip}`;
         const formula = $('#fareFormula');
         if (info.overLimit) {
@@ -404,13 +445,17 @@
           formula.textContent = `計費距離 ${info.billingKm} 公里，超過 29 公里，請由司機人工報價。`;
           formula.classList.add('over-limit');
         } else {
-          const totalFare = info.fare + waitingFee;
-          $('#fareLabel').textContent = '本趟車資（含長途、待時費）';
+          const appliedWaitingFee = includeExtras ? waitingFee : 0;
+          const appliedTemporaryStopFee = includeExtras ? temporaryStopFee : 0;
+          const totalFare = info.fare + appliedWaitingFee + appliedTemporaryStopFee;
+          $('#fareLabel').textContent = includeExtras ? '最終車資（含其他加成）' : '初步車資（含長途加價）';
           $('#fareAmount').textContent = `$${totalFare}`;
           $('#baseFareResult').textContent = `$${info.baseFare}`;
           $('#surcharge').textContent = `$${info.surcharge}`;
           const baseText = info.billingKm <= 3 ? '3 公里內基本車資 $100' : `$100＋(${info.billingKm}－3)×$20`;
-          formula.textContent = `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；＋待時費 $${waitingFee}；本趟車資＝$${totalFare}。小費 $${tip} 另計。`;
+          formula.textContent = includeExtras
+            ? `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；＋待時費 $${waitingFee}；＋臨停費 $${temporaryStopFee}；最終車資＝$${totalFare}。小費 $${tip} 另計。`
+            : `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；初步車資＝$${totalFare}。其他加成與小費尚未加入。`;
           formula.classList.remove('over-limit');
         }
       }
@@ -441,8 +486,9 @@
           return;
         }
         const waitingFee = validateWaitingFee();
+        const temporaryStopFee = getTemporaryStopFee();
         const tip = validateTip();
-        openLineShare(`${actualKm}公里/${info.fare + waitingFee}元/${tip}元`);
+        openLineShare(`${actualKm}公里/${info.fare + waitingFee + temporaryStopFee}元/${tip}元`);
       }
 
       function shareStatus(button) {
@@ -458,6 +504,14 @@
           message = `${button.dataset.status}｜${address}`;
         }
         openLineShare(message);
+      }
+
+      function updateStatusButtons() {
+        const pickupReady = Boolean(cleanAddress($('#pickup').value));
+        const destinationReady = Boolean(cleanAddress($('#destination').value));
+        $$('.status-btn').forEach(button => {
+          button.disabled = button.dataset.address === 'pickup' ? !pickupReady : !destinationReady;
+        });
       }
 
       function getWaitingMinutes(startedAt, stoppedAt = Date.now()) {
@@ -539,30 +593,35 @@
         $('#manualDistance').value = '';
         $('#waitingFee').value = '0';
         $('#tip').value = '0';
+        state.temporaryStopCount = 0;
+        $('#temporaryStopSummary').textContent = '第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0';
+        $('#temporaryStopFeeResult').textContent = '$0';
         $('#stops').innerHTML = '';
         renumberStops();
         $('#fareEmpty').style.display = 'block';
         $('#fareResult').classList.remove('show');
+        updateStatusButtons();
         renderWaiting();
         toast('已清除本趟行程');
       }
 
       $('#addStop').addEventListener('click', () => addStop());
       $('#openMaps').addEventListener('click', openNavigation);
-      $('#calculate').addEventListener('click', calculateManualFare);
-      $('#recalculate').addEventListener('click', calculateManualFare);
+      $('#calculateInitial').addEventListener('click', calculateInitialFare);
+      $('#calculateFinal').addEventListener('click', calculateFinalFare);
+      $('#addTemporaryStop').addEventListener('click', () => updateTemporaryStops(1));
+      $('#resetTemporaryStop').addEventListener('click', () => updateTemporaryStops(-state.temporaryStopCount));
+      $('#recalculate').addEventListener('click', calculateFinalFare);
       $('#navigate').addEventListener('click', openNavigation);
       $('#shareFare').addEventListener('click', shareFareReport);
       $('#waitingFee').addEventListener('change', () => {
         validateWaitingFee();
-        const distance = Number($('#manualDistance').value);
-        if ($('#manualDistance').value.trim() !== '' && Number.isFinite(distance) && distance >= 0) renderFare(distance);
       });
       $('#tip').addEventListener('change', () => {
         validateTip();
-        const distance = Number($('#manualDistance').value);
-        if ($('#manualDistance').value.trim() !== '' && Number.isFinite(distance) && distance >= 0) renderFare(distance);
       });
+      $('#pickup').addEventListener('input', updateStatusButtons);
+      $('#destination').addEventListener('input', updateStatusButtons);
       $$('.status-btn').forEach(button => button.addEventListener('click', () => shareStatus(button)));
       $$('[data-wait-source]').forEach(button => button.addEventListener('click', () => startWaiting($(`#${button.dataset.waitSource}`).value)));
       $('#stopWaiting').addEventListener('click', stopWaiting);
@@ -570,6 +629,7 @@
       $('#resetTrip').addEventListener('click', resetTrip);
       $('#scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
+      updateStatusButtons();
       restoreWaiting();
 
       window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes };
