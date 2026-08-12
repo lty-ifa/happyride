@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10253f">
+  <title>司機行程助手</title>
+  <style>
+    :root {
+      --navy: #10253f;
+      --blue: #1d5f9e;
+      --blue-soft: #e9f3fc;
+      --green: #12835f;
+      --orange: #e66b2e;
+      --orange-soft: #fff0e8;
+      --red: #c63d3d;
+      --ink: #172333;
+      --muted: #66758a;
+      --surface: #ffffff;
+      --bg: #f2f5f8;
+      --shadow: 0 10px 28px rgba(16, 37, 63, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button { touch-action: manipulation; }
+    .app { width: min(100%, 760px); margin: 0 auto; padding-bottom: 96px; }
+    .hero {
+      padding: calc(22px + env(safe-area-inset-top)) 20px 26px;
+      color: #fff;
+      background: linear-gradient(145deg, #10253f 0%, #173d65 65%, #1d5f9e 100%);
+      border-radius: 0 0 28px 28px;
+    }
+    .eyebrow { margin: 0 0 4px; color: #a9d5ff; font-size: 13px; font-weight: 800; letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(28px, 7vw, 42px); line-height: 1.2; letter-spacing: -.03em; }
+    .hero p:last-child { margin: 8px 0 0; color: #d8e9fa; font-size: 15px; }
+    main { padding: 16px; }
+    .card {
+      margin-bottom: 14px;
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid rgba(217, 226, 236, .85);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    h2 { margin: 0; color: var(--navy); font-size: 19px; }
+    .badge { padding: 4px 9px; color: var(--blue); background: var(--blue-soft); border-radius: 99px; font-size: 12px; font-weight: 800; }
+    label { display: block; margin-bottom: 6px; color: #4d5d70; font-size: 13px; font-weight: 800; }
+    input {
+      width: 100%; min-height: 48px; padding: 11px 13px;
+      color: var(--ink); background: #fbfcfd;
+      border: 1px solid #cbd7e3; border-radius: 12px; outline: none;
+    }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29, 95, 158, .13); }
+    input[type="number"] { text-align: right; }
+    .field { margin-bottom: 14px; }
+    .input-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .wait-start { min-width: 82px; padding-inline: 12px; }
+    .route-line { position: relative; padding-left: 22px; }
+    .route-line::before { content: ""; position: absolute; top: 16px; bottom: 19px; left: 5px; width: 2px; background: #d6e5f2; }
+    .route-point { position: relative; }
+    .route-point::before { content: ""; position: absolute; left: -21px; top: 37px; width: 10px; height: 10px; border: 3px solid #fff; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+    .route-point.destination::before { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+    .stop-item { margin-bottom: 13px; padding: 12px; background: #f6f9fc; border: 1px solid #e1e8f0; border-radius: 14px; }
+    .stop-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .stop-title strong { font-size: 13px; }
+    .stop-tools { display: flex; gap: 6px; }
+    .icon-btn { width: 38px; min-height: 38px; padding: 0; color: var(--blue); background: #fff; border: 1px solid #cad7e4; border-radius: 10px; font-weight: 900; }
+    .icon-btn.danger { color: var(--red); }
+    .btn {
+      min-height: 46px; padding: 10px 16px; border: 0; border-radius: 12px;
+      font-weight: 850; cursor: pointer; transition: transform .15s, opacity .15s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { cursor: not-allowed; opacity: .45; }
+    .btn-primary { color: #fff; background: var(--blue); }
+    .btn-green { color: #fff; background: var(--green); }
+    .btn-danger { color: #fff; background: var(--red); }
+    .btn-ghost { color: var(--blue); background: var(--blue-soft); }
+    .btn-line { color: #fff; background: #06c755; }
+    .wide { width: 100%; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+    .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .status-btn { min-width: 0; padding-inline: 4px; color: var(--navy); background: #eef3f8; border: 1px solid #d6e0ea; font-size: 18px; }
+    .status-btn.help { font-size: 15px; }
+    .waiting-panel { display: none; padding: 16px; border: 1px solid #f6bf96; border-radius: 16px; background: var(--orange-soft); }
+    .waiting-panel.show { display: block; }
+    .waiting-label { color: #9a441e; font-size: 12px; font-weight: 900; letter-spacing: .08em; }
+    .waiting-address { margin: 4px 0; font-weight: 800; overflow-wrap: anywhere; }
+    .waiting-time { margin: 2px 0 12px; color: var(--orange); font-size: 34px; font-weight: 950; line-height: 1.2; }
+    .waiting-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fare-placeholder { padding: 20px 8px; text-align: center; color: var(--muted); }
+    .result { display: none; }
+    .result.show { display: block; }
+    .fare-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 16px; color: #fff; background: linear-gradient(135deg, #12835f, #0d684c); border-radius: 16px; }
+    .fare-hero span { font-size: 13px; font-weight: 800; }
+    .fare-hero strong { font-size: 38px; line-height: 1; }
+    .fare-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin: 12px 0; }
+    .metric { padding: 12px; background: #f3f7fa; border-radius: 12px; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin-top: 2px; font-size: 18px; }
+    .formula { margin: 0 0 12px; padding: 12px; color: #44566b; background: #f8fafc; border-left: 4px solid var(--blue); border-radius: 8px; font-size: 13px; }
+    .over-limit { color: #9a441e; background: var(--orange-soft); border-left-color: var(--orange); }
+    .toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 20; width: min(calc(100% - 32px), 500px); padding: 12px 16px; color: #fff; background: rgba(22, 35, 51, .96); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.22); text-align: center; transform: translate(-50%, 130%); transition: transform .25s; }
+    .toast.show { transform: translate(-50%, 0); }
+    .footer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 430px) {
+      main { padding: 12px; }
+      .card { padding: 15px; border-radius: 17px; }
+      .status-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+      .status-btn { min-height: 50px; font-size: 17px; }
+      .status-btn.help { font-size: 13px; }
+      .input-actions { grid-template-columns: minmax(0, 1fr) 74px; }
+      .wait-start { min-width: 0; padding-inline: 5px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <p class="eyebrow">DRIVER TOOL</p>
+      <h1>司機行程助手</h1>
+      <p>路線、車資、待時與回報，一頁完成。</p>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="routeTitle">
+        <div class="card-head">
+          <h2 id="routeTitle">本趟行程</h2>
+          <span id="stopCount" class="badge">0 個停靠點</span>
+        </div>
+        <div class="route-line">
+          <div class="field route-point">
+            <label for="pickup">上車地址</label>
+            <div class="input-actions">
+              <input id="pickup" class="address-input" type="text" autocomplete="off" placeholder="輸入客人上車地點">
+              <button class="btn btn-ghost wait-start" type="button" data-wait-source="pickup">開始待時</button>
+            </div>
+          </div>
+
+          <div id="stops"></div>
+          <button id="addStop" class="btn btn-ghost wide" type="button" style="margin-bottom:14px">＋ 新增中途停靠點</button>
+
+          <div class="field route-point destination">
+            <label for="destination">下車地址</label>
+            <div class="input-actions">
+              <input id="destination" class="address-input" type="text" autocomplete="off" placeholder="輸入客人下車地點">
+              <button class="btn btn-ghost wait-start" type="button" data-wait-source="destination">開始待時</button>
+            </div>
+          </div>
+        </div>
+
+        <button id="openMaps" class="btn btn-green wide" type="button" style="margin-bottom:14px">開啟 Google Maps 查看距離</button>
+        <div class="field">
+          <label for="manualDistance">Google Maps 顯示的總公里數</label>
+          <input id="manualDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="例如：12.6">
+          <p class="hint">回到本頁輸入公里數，系統會無條件進位後計價。</p>
+        </div>
+        <div class="field">
+          <label for="tip">小費（獨立紀錄，不併入車資）</label>
+          <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
+        </div>
+        <button id="calculate" class="btn btn-primary wide" type="button">計算車資</button>
+      </section>
+
+      <section class="card" aria-labelledby="statusTitle">
+        <div class="card-head">
+          <h2 id="statusTitle">司機狀態</h2>
+          <span class="badge">開啟 LINE 分享</span>
+        </div>
+        <div class="status-grid">
+          <button class="btn status-btn" type="button" data-status="到" data-address="pickup">到</button>
+          <button class="btn status-btn" type="button" data-status="通" data-address="pickup">通</button>
+          <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup">幫通</button>
+          <button class="btn status-btn" type="button" data-status="上" data-address="destination">上</button>
+          <button class="btn status-btn" type="button" data-status="下" data-address="destination">下</button>
+        </div>
+        <p class="hint">按下後由你在 LINE 選擇群組並確認傳送；此頁不會記錄傳送結果。</p>
+      </section>
+
+      <section class="card" aria-labelledby="waitingTitle">
+        <div class="card-head">
+          <h2 id="waitingTitle">待時計時</h2>
+          <span class="badge">一次一個地點</span>
+        </div>
+        <div id="waitingEmpty" class="fare-placeholder">請從任一地址旁按「開始待時」</div>
+        <div id="waitingActive" class="waiting-panel" aria-live="polite">
+          <div id="waitingState" class="waiting-label">待時進行中</div>
+          <div id="waitingAddress" class="waiting-address"></div>
+          <div id="waitingTime" class="waiting-time">0 分鐘</div>
+          <div class="waiting-actions">
+            <button id="shareWaiting" class="btn btn-line" type="button">分享到 LINE</button>
+            <button id="stopWaiting" class="btn btn-danger" type="button">停止</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="fareTitle">
+        <div class="card-head"><h2 id="fareTitle">車資結果</h2></div>
+        <div id="fareEmpty" class="fare-placeholder">輸入 Google Maps 顯示的公里數後計算車資</div>
+        <div id="fareResult" class="result" aria-live="polite">
+          <div class="fare-hero">
+            <span id="fareLabel">本趟車資</span>
+            <strong id="fareAmount">$0</strong>
+          </div>
+          <div class="fare-meta">
+            <div class="metric"><span>手動輸入距離</span><strong id="actualDistance">—</strong></div>
+            <div class="metric"><span>計費公里</span><strong id="billingDistance">—</strong></div>
+            <div class="metric"><span>長途加價</span><strong id="surcharge">—</strong></div>
+            <div class="metric"><span>小費（另計）</span><strong id="tipResult">$0</strong></div>
+          </div>
+          <p id="fareFormula" class="formula"></p>
+          <div class="two-col">
+            <button id="navigate" class="btn btn-green" type="button">再次開啟地圖</button>
+            <button id="recalculate" class="btn btn-ghost" type="button">重新計算</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="footer-actions">
+          <button id="resetTrip" class="btn btn-ghost" type="button">清除本趟行程</button>
+          <button id="scrollTop" class="btn btn-ghost" type="button">回到最上方</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE = {
+        waiting: 'driverFare.activeWaiting'
+      };
+      const state = {
+        stopId: 0,
+        activeWaiting: null,
+        stoppedWaiting: null,
+        waitingTimer: null
+      };
+
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+      function toast(message) {
+        const el = $('#toast');
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
+      }
+
+      function cleanAddress(value) { return String(value || '').trim(); }
+
+      function calculateFareFromKm(actualKm) {
+        const billingKm = Math.max(0, Math.ceil(Number(actualKm)));
+        if (!Number.isFinite(billingKm)) throw new Error('距離格式錯誤');
+        if (billingKm > 29) return { billingKm, fare: null, surcharge: null, overLimit: true };
+        const baseFare = billingKm <= 3 ? 100 : 100 + (billingKm - 3) * 20;
+        let surcharge = 0;
+        if (billingKm >= 25) surcharge = 80;
+        else if (billingKm >= 20) surcharge = 60;
+        else if (billingKm >= 15) surcharge = 40;
+        else if (billingKm >= 10) surcharge = 20;
+        return { billingKm, baseFare, surcharge, fare: baseFare + surcharge, overLimit: false };
+      }
+
+      function getStops() { return $$('.stop-address').map(input => cleanAddress(input.value)).filter(Boolean); }
+      function getRouteAddresses() {
+        return { pickup: cleanAddress($('#pickup').value), stops: getStops(), destination: cleanAddress($('#destination').value) };
+      }
+
+      function addStop(value = '') {
+        const id = ++state.stopId;
+        const item = document.createElement('div');
+        item.className = 'stop-item route-point';
+        item.dataset.stopId = String(id);
+        item.innerHTML = `
+          <div class="stop-title">
+            <strong>中途停靠點 <span class="stop-number"></span></strong>
+            <div class="stop-tools">
+              <button class="icon-btn move-up" type="button" aria-label="停靠點上移">↑</button>
+              <button class="icon-btn move-down" type="button" aria-label="停靠點下移">↓</button>
+              <button class="icon-btn danger remove-stop" type="button" aria-label="刪除停靠點">×</button>
+            </div>
+          </div>
+          <div class="input-actions">
+            <input class="address-input stop-address" type="text" autocomplete="off" placeholder="輸入中途停靠地址" value="${escapeHtml(value)}">
+            <button class="btn btn-ghost wait-start" type="button">開始待時</button>
+          </div>`;
+        $('#stops').appendChild(item);
+        $('.remove-stop', item).addEventListener('click', () => { item.remove(); renumberStops(); });
+        $('.move-up', item).addEventListener('click', () => moveStop(item, -1));
+        $('.move-down', item).addEventListener('click', () => moveStop(item, 1));
+        $('.wait-start', item).addEventListener('click', () => startWaiting($('.stop-address', item).value));
+        renumberStops();
+      }
+
+      function escapeHtml(text) {
+        return String(text).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+      }
+
+      function moveStop(item, direction) {
+        const sibling = direction < 0 ? item.previousElementSibling : item.nextElementSibling;
+        if (!sibling) return;
+        if (direction < 0) item.parentNode.insertBefore(item, sibling);
+        else item.parentNode.insertBefore(sibling, item);
+        renumberStops();
+      }
+
+      function renumberStops() {
+        const items = $$('.stop-item');
+        items.forEach((item, index) => {
+          $('.stop-number', item).textContent = String(index + 1);
+          $('.move-up', item).disabled = index === 0;
+          $('.move-down', item).disabled = index === items.length - 1;
+        });
+        $('#stopCount').textContent = `${items.length} 個停靠點`;
+        updateWaitingButtons();
+      }
+
+      function validateTip() {
+        const input = $('#tip');
+        const numeric = Number(input.value);
+        const tip = Number.isFinite(numeric) ? Math.max(0, Math.floor(numeric)) : 0;
+        input.value = String(tip);
+        return tip;
+      }
+
+      function calculateManualFare() {
+        const input = $('#manualDistance');
+        const actualKm = Number(input.value);
+        if (input.value.trim() === '' || !Number.isFinite(actualKm) || actualKm < 0) {
+          toast('請輸入 Google Maps 顯示的公里數');
+          input.focus();
+          return;
+        }
+        renderFare(actualKm);
+        $('#fareTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function renderFare(actualKm) {
+        const info = calculateFareFromKm(actualKm);
+        const tip = validateTip();
+        $('#fareEmpty').style.display = 'none';
+        $('#fareResult').classList.add('show');
+        $('#actualDistance').textContent = `${actualKm.toFixed(1)} km`;
+        $('#billingDistance').textContent = `${info.billingKm} km`;
+        $('#tipResult').textContent = `$${tip}`;
+        const formula = $('#fareFormula');
+        if (info.overLimit) {
+          $('#fareLabel').textContent = '超過自動計價範圍';
+          $('#fareAmount').textContent = '人工報價';
+          $('#surcharge').textContent = '—';
+          formula.textContent = `計費距離 ${info.billingKm} 公里，超過 29 公里，請由司機人工報價。`;
+          formula.classList.add('over-limit');
+        } else {
+          $('#fareLabel').textContent = '本趟車資';
+          $('#fareAmount').textContent = `$${info.fare}`;
+          $('#surcharge').textContent = `$${info.surcharge}`;
+          const baseText = info.billingKm <= 3 ? '3 公里內基本車資 $100' : `$100＋(${info.billingKm}－3)×$20`;
+          formula.textContent = `${baseText}${info.surcharge ? `＋長途加價 $${info.surcharge}` : ''}＝$${info.fare}；小費 $${tip} 另計。`;
+          formula.classList.remove('over-limit');
+        }
+      }
+
+      function openNavigation() {
+        const addresses = getRouteAddresses();
+        if (!addresses.pickup || !addresses.destination) { toast('請先輸入完整行程'); return; }
+        const params = new URLSearchParams({ api: '1', origin: addresses.pickup, destination: addresses.destination, travelmode: 'driving' });
+        if (addresses.stops.length) params.set('waypoints', addresses.stops.join('|'));
+        window.open(`https://www.google.com/maps/dir/?${params.toString()}`, '_blank', 'noopener');
+      }
+
+      function openLineShare(message) {
+        window.open(`https://line.me/R/share?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+      }
+
+      function shareStatus(button) {
+        const address = cleanAddress($(`#${button.dataset.address}`).value);
+        if (!address) { toast(`請先輸入${button.dataset.address === 'pickup' ? '上車' : '下車'}地址`); return; }
+        openLineShare(`${button.dataset.status}｜${address}`);
+      }
+
+      function getWaitingMinutes(startedAt, stoppedAt = Date.now()) {
+        return Math.max(0, Math.floor((stoppedAt - startedAt) / 60000));
+      }
+
+      function startWaiting(address) {
+        address = cleanAddress(address);
+        if (!address) { toast('請先輸入這個地點的地址'); return; }
+        if (state.activeWaiting) { toast('目前已有一個地點正在待時'); return; }
+        state.stoppedWaiting = null;
+        state.activeWaiting = { address, startedAt: Date.now() };
+        localStorage.setItem(STORAGE.waiting, JSON.stringify(state.activeWaiting));
+        renderWaiting();
+        toast('已開始待時，可選擇分享到 LINE');
+      }
+
+      function stopWaiting() {
+        if (!state.activeWaiting) return;
+        const stoppedAt = Date.now();
+        state.stoppedWaiting = { ...state.activeWaiting, stoppedAt, minutes: getWaitingMinutes(state.activeWaiting.startedAt, stoppedAt) };
+        state.activeWaiting = null;
+        localStorage.removeItem(STORAGE.waiting);
+        renderWaiting();
+      }
+
+      function shareWaiting() {
+        const data = state.activeWaiting || state.stoppedWaiting;
+        if (!data) return;
+        const minutes = state.activeWaiting ? getWaitingMinutes(data.startedAt) : data.minutes;
+        openLineShare(`待時｜${data.address}｜${minutes}分鐘`);
+        if (state.stoppedWaiting) {
+          state.stoppedWaiting = null;
+          renderWaiting();
+        }
+      }
+
+      function renderWaiting() {
+        const data = state.activeWaiting || state.stoppedWaiting;
+        const panel = $('#waitingActive');
+        $('#waitingEmpty').style.display = data ? 'none' : 'block';
+        panel.classList.toggle('show', Boolean(data));
+        clearInterval(state.waitingTimer);
+        if (data) {
+          const active = Boolean(state.activeWaiting);
+          $('#waitingState').textContent = active ? '待時進行中' : '本次待時已停止';
+          $('#waitingAddress').textContent = data.address;
+          $('#waitingTime').textContent = `${active ? getWaitingMinutes(data.startedAt) : data.minutes} 分鐘`;
+          $('#stopWaiting').style.display = active ? 'block' : 'none';
+          $('#shareWaiting').textContent = active ? '分享目前待時' : '分享本次結果';
+          if (active) state.waitingTimer = setInterval(() => {
+            $('#waitingTime').textContent = `${getWaitingMinutes(state.activeWaiting.startedAt)} 分鐘`;
+          }, 1000);
+        }
+        updateWaitingButtons();
+      }
+
+      function updateWaitingButtons() {
+        $$('.wait-start').forEach(button => { button.disabled = Boolean(state.activeWaiting); });
+      }
+
+      function restoreWaiting() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE.waiting));
+          if (saved && cleanAddress(saved.address) && Number.isFinite(saved.startedAt)) state.activeWaiting = saved;
+        } catch (_) { localStorage.removeItem(STORAGE.waiting); }
+        renderWaiting();
+      }
+
+      function resetTrip() {
+        if (state.activeWaiting && !window.confirm('目前正在待時，確定要停止計時並清除本趟行程嗎？')) return;
+        if (!state.activeWaiting && !window.confirm('確定要清除本趟行程嗎？')) return;
+        state.activeWaiting = null;
+        state.stoppedWaiting = null;
+        clearInterval(state.waitingTimer);
+        localStorage.removeItem(STORAGE.waiting);
+        $('#pickup').value = '';
+        $('#destination').value = '';
+        $('#manualDistance').value = '';
+        $('#tip').value = '0';
+        $('#stops').innerHTML = '';
+        renumberStops();
+        $('#fareEmpty').style.display = 'block';
+        $('#fareResult').classList.remove('show');
+        renderWaiting();
+        toast('已清除本趟行程');
+      }
+
+      $('#addStop').addEventListener('click', () => addStop());
+      $('#openMaps').addEventListener('click', openNavigation);
+      $('#calculate').addEventListener('click', calculateManualFare);
+      $('#recalculate').addEventListener('click', calculateManualFare);
+      $('#navigate').addEventListener('click', openNavigation);
+      $('#tip').addEventListener('change', () => {
+        validateTip();
+        const distance = Number($('#manualDistance').value);
+        if ($('#manualDistance').value.trim() !== '' && Number.isFinite(distance) && distance >= 0) renderFare(distance);
+      });
+      $$('.status-btn').forEach(button => button.addEventListener('click', () => shareStatus(button)));
+      $$('[data-wait-source]').forEach(button => button.addEventListener('click', () => startWaiting($(`#${button.dataset.waitSource}`).value)));
+      $('#stopWaiting').addEventListener('click', stopWaiting);
+      $('#shareWaiting').addEventListener('click', shareWaiting);
+      $('#resetTrip').addEventListener('click', resetTrip);
+      $('#scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      restoreWaiting();
+
+      window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes };
+    })();
+  </script>
+</body>
+</html>
