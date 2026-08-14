@@ -436,14 +436,18 @@
         const text = $('#bookingMessage').value.replace(/\r/g, '');
         if (!text.trim()) return;
 
-        let pickup = extractLabeledValue(text, ['上車(?:地址|地點|處)?', '乘車(?:地址|地點|處)?', '接送(?:地址|地點|處)?', '起點', '出發(?:地址|地點|處)?', 'From']);
-        let destination = extractLabeledValue(text, ['下車(?:地址|地點|處)?', '目的地', '終點', '抵達(?:地址|地點|處)?', 'To']);
-        let stops = extractStopValues(text);
-        const phoneMatch = text.match(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/);
+        const parsingText = text
+          .replace(/@All\s*/gi, '')
+          .replace(/^[\t ]*(?:📍|📌|🚩|🏁)[\t ]*/gm, '');
+
+        let pickup = extractLabeledValue(parsingText, ['上車(?:地址|地點|處)?', '乘車(?:地址|地點|處)?', '接送(?:地址|地點|處)?', '起點', '出發(?:地址|地點|處)?', 'From']);
+        let destination = extractLabeledValue(parsingText, ['下車(?:地址|地點|處)?', '目的地', '終點', '抵達(?:地址|地點|處)?', 'To']);
+        let stops = extractStopValues(parsingText);
+        const phoneMatch = parsingText.match(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/);
         const phone = normalizePhone(phoneMatch ? phoneMatch[0] : '');
 
         if ((!pickup || !destination)) {
-          const routeLine = text.split('\n').find(line => /(?:→|＞|->|到)/.test(line));
+          const routeLine = parsingText.split('\n').find(line => /(?:→|＞|->|到)/.test(line));
           if (routeLine) {
             const route = routeLine.split(/\s*(?:→|＞|->|到)\s*/).map(cleanAddress).filter(Boolean);
             if (route.length >= 2) {
@@ -455,7 +459,7 @@
         }
 
         if (!pickup) {
-          const freeformPlace = text
+          const freeformPlace = parsingText
             .replace(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/g, ' ')
             .replace(/(?:叫車|派車|預約)?\s*[一二三四五六七八九十\d]+\s*(?:台車|台|車輛)/g, ' ')
             .replace(/[，,。；;｜|]/g, ' ')
@@ -464,7 +468,7 @@
           if (freeformPlace && freeformPlace.length >= 2) pickup = freeformPlace;
         }
 
-        if (pickup) $('#pickup').value = pickup.replace(/@All\s*/gi, '').trim();
+        if (pickup) $('#pickup').value = pickup;
         if (destination) $('#destination').value = destination;
         if (stops.length) replaceStops(stops);
         if (phone) $('#phone').value = formatPhone(phone);
