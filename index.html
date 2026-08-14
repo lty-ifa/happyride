@@ -401,7 +401,7 @@
 
       function extractLabeledValue(text, labels) {
         const labelPattern = labels.join('|');
-        const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:${labelPattern})\\s*[：:]?\\s*([^\\n]+)`, 'im'));
+        const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:📍|📌|🚩|🏁)?\\s*(?:${labelPattern})\\s*[：:]?\\s*([^\\n]+)`, 'im'));
         if (!match) return '';
         return cleanAddress(match[1]).replace(/^[：:\-–—>＞→\s]+|[；;，,。\s]+$/g, '');
       }
