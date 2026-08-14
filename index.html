@@ -464,7 +464,7 @@
           if (freeformPlace && freeformPlace.length >= 2) pickup = freeformPlace;
         }
 
-        if (pickup) $('#pickup').value = pickup;
+        if (pickup) $('#pickup').value = pickup.replace(/@All\s*/gi, '').trim();
         if (destination) $('#destination').value = destination;
         if (stops.length) replaceStops(stops);
         if (phone) $('#phone').value = formatPhone(phone);
