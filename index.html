@@ -38,7 +38,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
       line-height: 1.5;
     }
-    button, input { font: inherit; }
+    button, input, textarea { font: inherit; }
     button { touch-action: manipulation; }
     .app { width: min(100%, 760px); margin: 0 auto; padding-bottom: 96px; }
     .hero {
@@ -95,15 +95,17 @@
     h2 { margin: 0; color: var(--navy); font-size: 19px; letter-spacing: .01em; }
     .badge { padding: 5px 10px; color: #455f66; background: rgba(246, 240, 226, .72); border: 1px solid rgba(91, 113, 112, .34); border-radius: 99px; font-size: 12px; font-weight: 800; }
     label { display: block; margin-bottom: 6px; color: #4d5d70; font-size: 13px; font-weight: 800; }
-    input {
+    input, textarea {
       width: 100%; min-height: 48px; padding: 11px 13px;
       color: var(--ink); background: #f8f3e8;
       border: 1px solid #bfc9c4; border-radius: 12px; outline: none;
     }
-    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(73, 122, 145, .13); background: #fff; }
+    input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(73, 122, 145, .13); background: #fff; }
+    textarea { min-height: 118px; resize: vertical; line-height: 1.55; }
     input[type="number"] { text-align: right; }
     .field { margin-bottom: 14px; }
     .input-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .phone-actions { grid-template-columns: minmax(0, 1fr) minmax(106px, auto); }
     .wait-start { min-width: 82px; padding-inline: 12px; }
     .route-line { position: relative; padding-left: 22px; }
     .route-line::before { content: ""; position: absolute; top: 16px; bottom: 19px; left: 5px; width: 2px; background: #cbdcdd; border-radius: 9px; }
@@ -133,16 +135,17 @@
     .btn-danger { color: #fff; background: var(--red); }
     .btn-ghost { color: #3d697c; background: #e3e9e7; border-color: #bccbc9; }
     .btn-line { color: #fff; background: #06c755; }
+    .btn-call { display: flex; align-items: center; justify-content: center; color: #fff; background: #3f7d70; border-color: #3f7d70; text-decoration: none; }
+    .btn-call.disabled { pointer-events: none; cursor: not-allowed; opacity: .45; }
     .wide { width: 100%; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
-    .status-grid { display: grid; grid-template-columns: .86fr .86fr 1.32fr .86fr .86fr; gap: 8px; }
+    .status-grid { display: grid; grid-template-columns: 1.18fr 1.32fr .86fr .86fr; gap: 8px; }
     .status-btn { min-width: 0; min-height: 56px; padding-inline: 4px; color: var(--navy); background: #f4f8fb; border-color: #d3e1e9; font-size: 24px; font-weight: 950; line-height: 1; text-shadow: none; }
     .status-btn:nth-child(1) { color: #f4eddd; background: #3f7d70; border-color: #3f7d70; }
-    .status-btn:nth-child(2) { color: #f4eddd; background: #497a91; border-color: #497a91; }
-    .status-btn:nth-child(3) { color: #f4eddd; background: #746a88; border-color: #746a88; }
-    .status-btn:nth-child(4) { color: #f4eddd; background: #b96f4f; border-color: #b96f4f; }
-    .status-btn:nth-child(5) { color: #f4eddd; background: #a95353; border-color: #a95353; }
+    .status-btn:nth-child(2) { color: #f4eddd; background: #746a88; border-color: #746a88; }
+    .status-btn:nth-child(3) { color: #f4eddd; background: #b96f4f; border-color: #b96f4f; }
+    .status-btn:nth-child(4) { color: #f4eddd; background: #a95353; border-color: #a95353; }
     .status-btn:disabled { opacity: .72; }
     .status-btn.help { font-size: 24px; }
     .waiting-panel { display: none; padding: 16px; border: 1px solid #c9b393; border-radius: 16px; background-color: #eadcc7; background-image: linear-gradient(rgba(234, 220, 199, .7), rgba(234, 220, 199, .7)), url('retro-paper-grain.png?v=20260813-1'); background-size: auto, 360px 360px; background-blend-mode: normal, multiply; }
@@ -186,10 +189,11 @@
       }
       main { padding: 12px; }
       .card { padding: 15px; border-radius: 17px; }
-      .status-grid { grid-template-columns: .82fr .82fr 1.42fr .82fr .82fr; gap: 5px; }
+      .status-grid { grid-template-columns: 1.18fr 1.32fr .82fr .82fr; gap: 5px; }
       .status-btn { min-height: 56px; font-size: 22px; }
       .status-btn.help { font-size: 22px; }
       .input-actions { grid-template-columns: minmax(0, 1fr) 74px; }
+      .phone-actions { grid-template-columns: minmax(0, 1fr) 106px; }
       .wait-start { min-width: 0; padding-inline: 5px; font-size: 13px; }
     }
   </style>
@@ -209,13 +213,12 @@
           <span class="badge">開啟 LINE 分享</span>
         </div>
         <div class="status-grid">
-          <button class="btn status-btn" type="button" data-status="到" data-address="pickup" disabled>到</button>
-          <button class="btn status-btn" type="button" data-status="通" data-address="pickup" disabled>通</button>
+          <button class="btn status-btn" type="button" data-status="到／通" data-address="pickup" disabled>到／通</button>
           <button class="btn status-btn help" type="button" data-status="幫通" data-address="pickup" disabled>幫通</button>
           <button class="btn status-btn" type="button" data-status="客上" data-address="destination" data-compose="route" disabled>上</button>
           <button class="btn status-btn" type="button" data-status="客下" data-address="destination" disabled>下</button>
         </div>
-        <p class="hint">輸入上車地點即可使用「到／通／幫通」；輸入下車地點後可使用「上／下」。不必完成公里數或車資。</p>
+        <p class="hint">輸入上車地點即可使用「到／通」或「幫通」；輸入下車地點後可使用「上／下」。不必完成公里數或車資。</p>
       </section>
 
       <section class="card" aria-labelledby="routeTitle">
@@ -223,9 +226,21 @@
           <h2 id="routeTitle">本趟行程</h2>
           <span id="stopCount" class="badge">0 個停靠點</span>
         </div>
+        <div class="field">
+          <label for="bookingMessage">叫車訊息</label>
+          <textarea id="bookingMessage" autocomplete="off" placeholder="貼上叫車訊息，系統會自動擷取上下車地點與手機號碼"></textarea>
+          <p id="parseMessage" class="hint">地點可以是地址、店名、地標、車站、醫院或路口。</p>
+        </div>
+        <div class="field">
+          <label for="phone">客人手機號碼</label>
+          <div class="input-actions phone-actions">
+            <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="例如：0912-345-678">
+            <a id="callPhone" class="btn btn-call disabled" role="button" aria-disabled="true">撥打電話</a>
+          </div>
+        </div>
         <div class="route-line">
           <div class="field route-point">
-            <label for="pickup">上車地址</label>
+            <label for="pickup">上車地點</label>
             <div class="input-actions">
               <input id="pickup" class="address-input" type="text" autocomplete="off" placeholder="輸入客人上車地點">
               <button class="btn btn-ghost wait-start" type="button" data-wait-source="pickup">開始待時</button>
@@ -236,7 +251,7 @@
           <button id="addStop" class="btn btn-ghost wide" type="button" style="margin-bottom:14px">＋ 新增中途停靠點</button>
 
           <div class="field route-point destination">
-            <label for="destination">下車地址</label>
+            <label for="destination">下車地點</label>
             <div class="input-actions">
               <input id="destination" class="address-input" type="text" autocomplete="off" placeholder="輸入客人下車地點">
               <button class="btn btn-ghost wait-start" type="button" data-wait-source="destination">開始待時</button>
@@ -258,7 +273,7 @@
           <h2 id="waitingTitle">待時計時</h2>
           <span class="badge">一次一個地點</span>
         </div>
-        <div id="waitingEmpty" class="fare-placeholder">請從任一地址旁按「開始待時」</div>
+        <div id="waitingEmpty" class="fare-placeholder">請從任一地點旁按「開始待時」</div>
         <div id="waitingActive" class="waiting-panel" aria-live="polite">
           <div id="waitingState" class="waiting-label">待時進行中</div>
           <div id="waitingAddress" class="waiting-address"></div>
@@ -356,6 +371,75 @@
 
       function cleanAddress(value) { return String(value || '').trim(); }
 
+      function normalizePhone(value) {
+        let digits = String(value || '').replace(/\D/g, '');
+        if (digits.startsWith('8869') && digits.length === 12) digits = `0${digits.slice(3)}`;
+        return /^09\d{8}$/.test(digits) ? digits : '';
+      }
+
+      function formatPhone(digits) {
+        return digits ? `${digits.slice(0, 4)}-${digits.slice(4, 7)}-${digits.slice(7)}` : '';
+      }
+
+      function extractLabeledValue(text, labels) {
+        const labelPattern = labels.join('|');
+        const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:${labelPattern})\\s*[：:]?\\s*([^\\n]+)`, 'im'));
+        if (!match) return '';
+        return cleanAddress(match[1]).replace(/^[：:\-–—>＞→\s]+|[；;，,。\s]+$/g, '');
+      }
+
+      function updateCallButton() {
+        const digits = normalizePhone($('#phone').value);
+        const button = $('#callPhone');
+        button.classList.toggle('disabled', !digits);
+        button.setAttribute('aria-disabled', String(!digits));
+        if (digits) button.href = `tel:${digits}`;
+        else button.removeAttribute('href');
+      }
+
+      function parseBookingMessage() {
+        const text = $('#bookingMessage').value.replace(/\r/g, '');
+        if (!text.trim()) {
+          $('#parseMessage').textContent = '地點可以是地址、店名、地標、車站、醫院或路口。';
+          return;
+        }
+
+        let pickup = extractLabeledValue(text, ['上車(?:地址|地點|處)?', '乘車(?:地址|地點|處)?', '接送(?:地址|地點|處)?', '起點', '出發(?:地址|地點|處)?', 'From']);
+        let destination = extractLabeledValue(text, ['下車(?:地址|地點|處)?', '目的地', '終點', '抵達(?:地址|地點|處)?', 'To']);
+        const phoneMatch = text.match(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/);
+        const phone = normalizePhone(phoneMatch ? phoneMatch[0] : '');
+
+        if ((!pickup || !destination)) {
+          const routeLine = text.split('\n').find(line => /(?:→|＞|->|到)/.test(line));
+          if (routeLine) {
+            const route = routeLine.split(/\s*(?:→|＞|->|到)\s*/).map(cleanAddress).filter(Boolean);
+            if (route.length >= 2) {
+              pickup ||= route[0].replace(/^(?:路線|行程)\s*[：:]?\s*/, '');
+              destination ||= route[route.length - 1];
+            }
+          }
+        }
+
+        if (!pickup) {
+          const freeformPlace = text
+            .replace(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/g, ' ')
+            .replace(/(?:叫車|派車|預約)?\s*[一二三四五六七八九十\d]+\s*(?:台車|台|車輛)/g, ' ')
+            .replace(/[，,。；;｜|]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (freeformPlace && freeformPlace.length >= 2) pickup = freeformPlace;
+        }
+
+        if (pickup) $('#pickup').value = pickup;
+        if (destination) $('#destination').value = destination;
+        if (phone) $('#phone').value = formatPhone(phone);
+        updateStatusButtons();
+        updateCallButton();
+
+        const found = [pickup && '上車地點', destination && '下車地點', phone && '手機號碼'].filter(Boolean);
+        $('#parseMessage').textContent = found.length ? `已自動擷取：${found.join('、')}` : '尚未辨識到資料，請確認訊息中有欄位名稱。';
+      }
+
       function calculateFareFromKm(actualKm) {
         const billingKm = Math.max(0, Math.ceil(Number(actualKm)));
         if (!Number.isFinite(billingKm)) throw new Error('距離格式錯誤');
@@ -389,7 +473,7 @@
             </div>
           </div>
           <div class="input-actions">
-            <input class="address-input stop-address" type="text" autocomplete="off" placeholder="輸入中途停靠地址" value="${escapeHtml(value)}">
+            <input class="address-input stop-address" type="text" autocomplete="off" placeholder="輸入中途停靠地點" value="${escapeHtml(value)}">
             <button class="btn btn-ghost wait-start" type="button">開始待時</button>
           </div>`;
         $('#stops').appendChild(item);
@@ -542,7 +626,7 @@
 
       function shareStatus(button) {
         const address = cleanAddress($(`#${button.dataset.address}`).value);
-        if (!address) { toast(`請先輸入${button.dataset.address === 'pickup' ? '上車' : '下車'}地址`); return; }
+        if (!address) { toast(`請先輸入${button.dataset.address === 'pickup' ? '上車' : '下車'}地點`); return; }
         let message;
         if (button.dataset.compose === 'route') {
           const stops = getStops();
@@ -569,7 +653,7 @@
 
       function startWaiting(address) {
         address = cleanAddress(address);
-        if (!address) { toast('請先輸入這個地點的地址'); return; }
+        if (!address) { toast('請先輸入這個地點'); return; }
         if (state.activeWaiting) { toast('目前已有一個地點正在待時'); return; }
         state.stoppedWaiting = null;
         state.activeWaiting = { address, startedAt: Date.now() };
@@ -637,6 +721,9 @@
         state.stoppedWaiting = null;
         clearInterval(state.waitingTimer);
         localStorage.removeItem(STORAGE.waiting);
+        $('#bookingMessage').value = '';
+        $('#parseMessage').textContent = '地點可以是地址、店名、地標、車站、醫院或路口。';
+        $('#phone').value = '';
         $('#pickup').value = '';
         $('#destination').value = '';
         $('#manualDistance').value = '';
@@ -650,6 +737,7 @@
         $('#fareEmpty').style.display = 'block';
         $('#fareResult').classList.remove('show');
         updateStatusButtons();
+        updateCallButton();
         renderWaiting();
         toast('已清除本趟行程');
       }
@@ -671,6 +759,8 @@
       });
       $('#pickup').addEventListener('input', updateStatusButtons);
       $('#destination').addEventListener('input', updateStatusButtons);
+      $('#bookingMessage').addEventListener('input', parseBookingMessage);
+      $('#phone').addEventListener('input', updateCallButton);
       $$('.status-btn').forEach(button => button.addEventListener('click', () => shareStatus(button)));
       $$('[data-wait-source]').forEach(button => button.addEventListener('click', () => startWaiting($(`#${button.dataset.waitSource}`).value)));
       $('#stopWaiting').addEventListener('click', stopWaiting);
@@ -679,9 +769,10 @@
       $('#scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
       updateStatusButtons();
+      updateCallButton();
       restoreWaiting();
 
-      window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes };
+      window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes, normalizePhone };
     })();
   </script>
 </body>
