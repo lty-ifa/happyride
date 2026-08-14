@@ -86,13 +86,13 @@
     main > .card:nth-child(1) { background: #e8e1e3; border-color: #cbbfc5; box-shadow: 3px 4px 0 rgba(116, 106, 136, .48), var(--shadow); }
     main > .card:nth-child(2) { background: #dfe8e7; border-color: #bccdcb; box-shadow: 3px 4px 0 rgba(73, 122, 145, .48), var(--shadow); }
     main > .card:nth-child(3) { background: #e3e8dc; border-color: #c3cdbb; box-shadow: 3px 4px 0 rgba(114, 134, 107, .48), var(--shadow); }
-    main > .card:nth-child(4) { background: #eee1d7; border-color: #d5c1b3; box-shadow: 3px 4px 0 rgba(185, 111, 79, .48), var(--shadow); }
-    main > .card:nth-child(5) { background: #dde7e1; border-color: #bdcec5; box-shadow: 3px 4px 0 rgba(63, 125, 112, .48), var(--shadow); }
-    main > .card:nth-child(6) { background: #ebe4d7; border-color: #cec3b1; box-shadow: 3px 4px 0 rgba(184, 148, 79, .48), var(--shadow); }
-    main > .card:nth-child(6) #resetTrip { color: #f4eddd; background: #a56750; border-color: #a56750; }
-    main > .card:nth-child(6) #scrollTop { color: #f4eddd; background: #8a7755; border-color: #8a7755; }
+    #fareCard { background: #dde7e1; border-color: #bdcec5; box-shadow: 3px 4px 0 rgba(63, 125, 112, .48), var(--shadow); }
+    .footer-card { background: #ebe4d7; border-color: #cec3b1; box-shadow: 3px 4px 0 rgba(184, 148, 79, .48), var(--shadow); }
+    .footer-card #resetTrip { color: #f4eddd; background: #a56750; border-color: #a56750; }
+    .footer-card #scrollTop { color: #f4eddd; background: #8a7755; border-color: #8a7755; }
     .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     h2 { margin: 0; color: var(--navy); font-size: 19px; letter-spacing: .01em; }
+    h3 { margin: 0 0 12px; color: var(--navy); font-size: 16px; }
     .badge { padding: 5px 10px; color: #455f66; background: rgba(246, 240, 226, .72); border: 1px solid rgba(91, 113, 112, .34); border-radius: 99px; font-size: 12px; font-weight: 800; }
     label { display: block; margin-bottom: 6px; color: #4d5d70; font-size: 13px; font-weight: 800; }
     input, textarea {
@@ -278,21 +278,24 @@
           <div id="waitingState" class="waiting-label">待時進行中</div>
           <div id="waitingAddress" class="waiting-address"></div>
           <div id="waitingTime" class="waiting-time">0 分鐘</div>
+          <p id="waitingCharge" class="formula">目前待時費 $0</p>
           <div class="waiting-actions">
             <button id="shareWaiting" class="btn btn-line" type="button">分享到 LINE</button>
             <button id="stopWaiting" class="btn btn-danger" type="button">停止</button>
           </div>
         </div>
+        <p class="hint">待時滿 8 分鐘收 $20；第 9 分鐘起，每增加 1 分鐘＋$5。停止後自動併入最終車資。</p>
       </section>
 
-      <section class="card" aria-labelledby="extrasTitle">
+      <section id="fareCard" class="card" aria-labelledby="fareTitle">
         <div class="card-head">
-          <h2 id="extrasTitle">其他車資加成</h2>
-          <span class="badge">人工調整</span>
+          <h2 id="fareTitle">車資結果</h2>
+          <span class="badge">含車資加成</span>
         </div>
+        <h3>車資加成</h3>
         <div class="two-col">
           <div class="field">
-            <label for="waitingFee">待時費（併入車資）</label>
+            <label for="waitingFee">待時費（自動累加，可手動調整）</label>
             <input id="waitingFee" type="number" min="0" step="1" inputmode="numeric" value="0">
           </div>
           <div class="field">
@@ -305,11 +308,7 @@
           <button id="resetTemporaryStop" class="btn btn-ghost" type="button">臨停歸零</button>
         </div>
         <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0</p>
-        <button id="calculateFinal" class="btn btn-primary wide" type="button">計算最終車資</button>
-      </section>
-
-      <section class="card" aria-labelledby="fareTitle">
-        <div class="card-head"><h2 id="fareTitle">車資結果</h2></div>
+        <button id="calculateFinal" class="btn btn-primary wide" type="button" style="margin-bottom:14px">計算最終車資</button>
         <div id="fareEmpty" class="fare-placeholder">先計算初步車資，再視需要加入其他車資加成</div>
         <div id="fareResult" class="result" aria-live="polite">
           <div class="fare-hero">
@@ -333,7 +332,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card footer-card">
         <div class="footer-actions">
           <button id="resetTrip" class="btn btn-ghost" type="button">清除本趟行程</button>
           <button id="scrollTop" class="btn btn-ghost" type="button">回到最上方</button>
@@ -621,7 +620,7 @@
         const waitingFee = validateWaitingFee();
         const temporaryStopFee = getTemporaryStopFee();
         const tip = validateTip();
-        openLineShare(`${actualKm}公里/${info.fare + waitingFee + temporaryStopFee}元/${tip}元`);
+        openLineShare(`${actualKm}/${info.fare + waitingFee + temporaryStopFee}/${tip}`);
       }
 
       function shareStatus(button) {
@@ -651,6 +650,11 @@
         return Math.max(0, Math.floor((stoppedAt - startedAt) / 60000));
       }
 
+      function calculateWaitingFee(minutes) {
+        const wholeMinutes = Math.max(0, Math.floor(Number(minutes) || 0));
+        return wholeMinutes < 8 ? 0 : 20 + (wholeMinutes - 8) * 5;
+      }
+
       function startWaiting(address) {
         address = cleanAddress(address);
         if (!address) { toast('請先輸入這個地點'); return; }
@@ -665,10 +669,16 @@
       function stopWaiting() {
         if (!state.activeWaiting) return;
         const stoppedAt = Date.now();
-        state.stoppedWaiting = { ...state.activeWaiting, stoppedAt, minutes: getWaitingMinutes(state.activeWaiting.startedAt, stoppedAt) };
+        const minutes = getWaitingMinutes(state.activeWaiting.startedAt, stoppedAt);
+        const fee = calculateWaitingFee(minutes);
+        state.stoppedWaiting = { ...state.activeWaiting, stoppedAt, minutes, fee };
         state.activeWaiting = null;
         localStorage.removeItem(STORAGE.waiting);
+        $('#waitingFee').value = String(validateWaitingFee() + fee);
         renderWaiting();
+        const actualKm = Number($('#manualDistance').value);
+        if ($('#manualDistance').value.trim() && Number.isFinite(actualKm) && actualKm >= 0) renderFare(actualKm, true);
+        toast(fee ? `本次待時費 $${fee}，已併入最終車資` : '本次未滿 8 分鐘，不收待時費');
       }
 
       function shareWaiting() {
@@ -692,11 +702,15 @@
           const active = Boolean(state.activeWaiting);
           $('#waitingState').textContent = active ? '待時進行中' : '本次待時已停止';
           $('#waitingAddress').textContent = data.address;
-          $('#waitingTime').textContent = `${active ? getWaitingMinutes(data.startedAt) : data.minutes} 分鐘`;
+          const minutes = active ? getWaitingMinutes(data.startedAt) : data.minutes;
+          $('#waitingTime').textContent = `${minutes} 分鐘`;
+          $('#waitingCharge').textContent = `目前待時費 $${calculateWaitingFee(minutes)}`;
           $('#stopWaiting').style.display = active ? 'block' : 'none';
           $('#shareWaiting').textContent = active ? '分享目前待時' : '分享本次結果';
           if (active) state.waitingTimer = setInterval(() => {
-            $('#waitingTime').textContent = `${getWaitingMinutes(state.activeWaiting.startedAt)} 分鐘`;
+            const minutes = getWaitingMinutes(state.activeWaiting.startedAt);
+            $('#waitingTime').textContent = `${minutes} 分鐘`;
+            $('#waitingCharge').textContent = `目前待時費 $${calculateWaitingFee(minutes)}`;
           }, 1000);
         }
         updateWaitingButtons();
@@ -772,7 +786,7 @@
       updateCallButton();
       restoreWaiting();
 
-      window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes, normalizePhone };
+      window.DriverFareApp = { calculateFareFromKm, getWaitingMinutes, calculateWaitingFee, normalizePhone };
     })();
   </script>
 </body>
