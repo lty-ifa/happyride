@@ -318,6 +318,10 @@
             <input id="distanceExtra" type="number" min="0" step="1" inputmode="numeric" value="0">
           </div>
           <div class="field">
+            <label for="messageExtra">訊息加價（自動）</label>
+            <input id="messageExtra" type="number" min="0" step="1" inputmode="numeric" value="0" readonly>
+          </div>
+          <div class="field">
             <label for="tip">小費</label>
             <input id="tip" type="number" min="0" step="1" inputmode="numeric" value="0">
           </div>
@@ -340,6 +344,7 @@
             <div class="metric"><span>長途加價</span><strong id="surcharge">—</strong></div>
             <div class="metric"><span>待時費</span><strong id="waitingFeeResult">$0</strong></div>
             <div class="metric"><span>距離加成</span><strong id="distanceExtraResult">$0</strong></div>
+            <div class="metric"><span>訊息加價</span><strong id="messageExtraResult">$0</strong></div>
             <div class="metric"><span>臨停費</span><strong id="temporaryStopFeeResult">$0</strong></div>
             <div class="metric"><span>小費（另計）</span><strong id="tipResult">$0</strong></div>
           </div>
@@ -387,7 +392,9 @@
         toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
       }
 
-      function cleanAddress(value) { return String(value || '').trim(); }
+      function cleanAddress(value) {
+        return String(value || '').replace(/@[^\s@]+[\s\u3000]+/g, '').trim();
+      }
 
       function normalizePhone(value) {
         let digits = String(value || '').replace(/\D/g, '');
@@ -401,14 +408,14 @@
 
       function extractLabeledValue(text, labels) {
         const labelPattern = labels.join('|');
-        const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:📍|📌|🚩|🏁)?\\s*(?:${labelPattern})\\s*[：:]?\\s*([^\\n]+)`, 'im'));
+        const match = text.match(new RegExp(`(?:^|\\n)\\s*(?:[-*•\\d①②③④⑤⑥⑦⑧⑨⑩.、()（）]+\\s*)?(?:📍|📌|🚩|🏁)?\\s*(?:${labelPattern})\\s*(?:地址|地點|位置|處)?\\s*[：:=－—-]?\\s*(?:\\n\\s*)?([^\\n]+)`, 'im'));
         if (!match) return '';
-        return cleanAddress(match[1]).replace(/^[：:\-–—>＞→\s]+|[；;，,。\s]+$/g, '');
+        return cleanAddress(match[1]).replace(/^[：:=\-–—>＞→\s]+|[；;，,。\s]+$/g, '');
       }
 
       function extractStopValues(text) {
         const stops = [];
-        const pattern = /(?:^|\n)\s*(?:中途停靠點|中途停靠地點|中途停靠|中途地點|停靠點|途經|經由)\s*\d*\s*[：:]?\s*([^\n]+)/gim;
+        const pattern = /(?:^|\n)\s*(?:[-*•\d①②③④⑤⑥⑦⑧⑨⑩.、()（）]+\s*)?(?:中途停靠點|中途停靠地點|中途停靠|中途地點|停靠點|停靠|途經|經由|中繼點|經停)\s*\d*\s*[：:=－—-]?\s*(?:\n\s*)?([^\n]+)/gim;
         let match;
         while ((match = pattern.exec(text))) {
           const values = match[1].split(/\s*(?:、|，|,|→|＞|->)\s*/).map(cleanAddress).filter(Boolean);
@@ -437,19 +444,40 @@
         if (!text.trim()) return;
 
         const parsingText = text
-          .replace(/@All\s*/gi, '')
-          .replace(/^[\t ]*(?:📍|📌|🚩|🏁)[\t ]*/gm, '');
+          .replace(/@[^\s@]+[\s\u3000]+/g, '')
+          .replace(/[➜➞➡⟶]/g, '→')
+          .replace(/[＞﹥]/g, '>')
+          .replace(/^[\t ]*(?:轉傳訊息|轉寄訊息|forwarded message)\s*[-—]*\s*$/gim, '')
+          .replace(/[\u200b-\u200d\ufeff]/g, '');
 
-        let pickup = extractLabeledValue(parsingText, ['上車(?:地址|地點|處)?', '乘車(?:地址|地點|處)?', '接送(?:地址|地點|處)?', '起點', '出發(?:地址|地點|處)?', 'From']);
-        let destination = extractLabeledValue(parsingText, ['下車(?:地址|地點|處)?', '目的地', '終點', '抵達(?:地址|地點|處)?', 'To']);
+        let pickup = extractLabeledValue(parsingText, ['上車', '乘車', '接客', '接人', '搭車', '起點', '出發', '出發地', '起程', 'From']);
+        let destination = extractLabeledValue(parsingText, ['下車', '送達', '送客', '目的地', '終點', '抵達', '迄點', '到達地', 'To']);
         let stops = extractStopValues(parsingText);
-        const phoneMatch = parsingText.match(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/);
+        const phonePattern = /(?:\+?886[\s().-]?9(?:[\s().-]?\d){8}|09(?:[\s().-]?\d){8})/g;
+        const phoneMatch = parsingText.match(phonePattern);
         const phone = normalizePhone(phoneMatch ? phoneMatch[0] : '');
+        const amountText = parsingText.replace(phonePattern, '');
+        const messageExtra = [...amountText.matchAll(/(?:^|[^\d])\+(\d{1,5})(?!\d)/g)]
+          .reduce((total, match) => total + Number(match[1]), 0);
+        $('#messageExtra').value = String(messageExtra);
+
+        const fixedBookingMatch = parsingText.match(/^\s*(.+?)\s*[一二三四五六七八九十\d]+\s*台(?:車子?|車輛)?\s*(?:載|坐)\s*\d+\s*個?(?:人)?(?:回|到|去)(.*)$/im);
+        if (fixedBookingMatch) {
+          pickup ||= cleanAddress(fixedBookingMatch[1]);
+          let routeTail = cleanAddress(fixedBookingMatch[2])
+            .replace(phonePattern, ' ')
+            .replace(/(?:^|\s)\+\d{1,5}(?!\d)/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          const explicitArea = routeTail.match(/(?:宜蘭市|羅東鎮|蘇澳鎮|頭城鎮|礁溪鄉|壯圍鄉|員山鄉|冬山鄉|五結鄉|三星鄉|大同鄉|南澳鄉)/);
+          if (explicitArea) routeTail = routeTail.slice(explicitArea.index).trim();
+          if (routeTail) destination ||= routeTail;
+        }
 
         if ((!pickup || !destination)) {
-          const routeLine = parsingText.split('\n').find(line => /(?:→|＞|->|到)/.test(line));
+          const routeLine = parsingText.split('\n').find(line => /(?:→|\s>\s|->|=>|至)/.test(line));
           if (routeLine) {
-            const route = routeLine.split(/\s*(?:→|＞|->|到)\s*/).map(cleanAddress).filter(Boolean);
+            const route = routeLine.split(/\s*(?:→|>|->|=>|至)\s*/).map(cleanAddress).filter(Boolean);
             if (route.length >= 2) {
               pickup ||= route[0].replace(/^(?:路線|行程)\s*[：:]?\s*/, '');
               destination ||= route[route.length - 1];
@@ -458,14 +486,25 @@
           }
         }
 
-        if (!pickup) {
-          const freeformPlace = parsingText
-            .replace(/(?:\+?886[\s-]?9|09)[\d\s-]{7,12}\d/g, ' ')
-            .replace(/(?:叫車|派車|預約)?\s*[一二三四五六七八九十\d]+\s*(?:台車|台|車輛)/g, ' ')
-            .replace(/[，,。；;｜|]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          if (freeformPlace && freeformPlace.length >= 2) pickup = freeformPlace;
+        if (!pickup || !destination) {
+          const metadata = /^(?:姓名|稱呼|電話|手機|聯絡|時間|日期|人數|車型|班機|航班|備註|乘客|客人|預約|叫車|派車|用車|費用|金額|付款|車號)\s*[：:=]/i;
+          const yilanAdministrativeArea = /(?:宜蘭市|羅東鎮|蘇澳鎮|頭城鎮|礁溪鄉|壯圍鄉|員山鄉|冬山鄉|五結鄉|三星鄉|大同鄉|南澳鄉)/;
+          const yilanTownship = /(?:宜蘭(?:市)?|羅東(?:鎮)?|蘇澳(?:鎮)?|頭城(?:鎮)?|礁溪(?:鄉)?|壯圍(?:鄉)?|員山(?:鄉)?|冬山(?:鄉)?|五結(?:鄉)?|三星(?:鄉)?|大同(?:鄉)?|南澳(?:鄉)?)/;
+          const addressHint = /(?:[縣市區鄉鎮村里路街段巷弄號樓]|車站|機場|飯店|旅館|醫院|學校|大學|超商|門市|社區|大樓|夜市|公園|碼頭)/;
+          const candidates = parsingText.split('\n').map(line => {
+            let candidate = cleanAddress(line)
+              .replace(phonePattern, ' ')
+              .replace(/(?:^|\s)\+\d{1,5}(?!\d)/g, ' ')
+              .replace(/^(?:[-*•\d①②③④⑤⑥⑦⑧⑨⑩.、()（）]+\s*)?(?:📍|📌|🚩|🏁)\s*/, '')
+              .replace(/^(?:地點|地址)\s*[：:=－—-]?\s*/, '');
+            const areaMatch = candidate.match(yilanAdministrativeArea);
+            if (areaMatch) candidate = candidate.slice(areaMatch.index);
+            return cleanAddress(candidate);
+          })
+            .filter(line => line.length >= 2 && line.length <= 80 && !metadata.test(line) && !normalizePhone(line) && (addressHint.test(line) || yilanTownship.test(line)));
+          if (!pickup && candidates.length) pickup = candidates[0];
+          if (!destination && candidates.length >= 2) destination = candidates[candidates.length - 1];
+          if (!stops.length && candidates.length > 2) stops = candidates.slice(1, -1);
         }
 
         if (pickup) $('#pickup').value = pickup;
@@ -474,7 +513,8 @@
         if (phone) $('#phone').value = formatPhone(phone);
         updateStatusButtons();
         updateCallButton();
-
+        const actualKm = Number($('#manualDistance').value);
+        if ($('#manualDistance').value.trim() && Number.isFinite(actualKm) && actualKm >= 0) renderFare(actualKm, true);
       }
 
       function calculateFareFromKm(actualKm) {
@@ -576,6 +616,11 @@
         return fee;
       }
 
+      function getMessageExtra() {
+        const numeric = Number($('#messageExtra').value);
+        return Number.isFinite(numeric) ? Math.max(0, Math.floor(numeric)) : 0;
+      }
+
       function getEnteredDistance() {
         const input = $('#manualDistance');
         const actualKm = Number(input.value);
@@ -616,6 +661,7 @@
         const info = calculateFareFromKm(actualKm);
         const waitingFee = validateWaitingFee();
         const distanceExtra = validateDistanceExtra();
+        const messageExtra = getMessageExtra();
         const temporaryStopFee = getTemporaryStopFee();
         const tip = validateTip();
         $('#fareEmpty').style.display = 'none';
@@ -623,6 +669,7 @@
         $('#billingDistance').textContent = `${info.billingKm} km`;
         $('#waitingFeeResult').textContent = includeExtras ? `$${waitingFee}` : '尚未加入';
         $('#distanceExtraResult').textContent = includeExtras ? `$${distanceExtra}` : '尚未加入';
+        $('#messageExtraResult').textContent = includeExtras ? `$${messageExtra}` : '尚未加入';
         $('#temporaryStopFeeResult').textContent = includeExtras ? `$${temporaryStopFee}` : '尚未加入';
         $('#tipResult').textContent = `$${tip}`;
         const formula = $('#fareFormula');
@@ -636,15 +683,16 @@
         } else {
           const appliedWaitingFee = includeExtras ? waitingFee : 0;
           const appliedDistanceExtra = includeExtras ? distanceExtra : 0;
+          const appliedMessageExtra = includeExtras ? messageExtra : 0;
           const appliedTemporaryStopFee = includeExtras ? temporaryStopFee : 0;
-          const totalFare = info.fare + appliedWaitingFee + appliedDistanceExtra + appliedTemporaryStopFee;
+          const totalFare = info.fare + appliedWaitingFee + appliedDistanceExtra + appliedMessageExtra + appliedTemporaryStopFee;
           $('#fareLabel').textContent = includeExtras ? '最終車資（含其他加成）' : '初步車資（含長途加價）';
           $('#fareAmount').textContent = `$${totalFare}`;
           $('#baseFareResult').textContent = `$${info.baseFare}`;
           $('#surcharge').textContent = `$${info.surcharge}`;
           const baseText = info.billingKm <= 3 ? '3 公里內基本車資 $100' : `$100＋(${info.billingKm}－3)×$20`;
           formula.textContent = includeExtras
-            ? `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；＋待時費 $${waitingFee}；＋距離加成 $${distanceExtra}；＋臨停費 $${temporaryStopFee}；最終車資＝$${totalFare}。小費 $${tip} 另計。`
+            ? `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；＋待時費 $${waitingFee}；＋距離加成 $${distanceExtra}；＋訊息加價 $${messageExtra}；＋臨停費 $${temporaryStopFee}；最終車資＝$${totalFare}。小費 $${tip} 另計。`
             : `${baseText}＝$${info.baseFare}；＋長途加價 $${info.surcharge}；初步車資＝$${totalFare}。其他加成與小費尚未加入。`;
           formula.classList.remove('over-limit');
         }
@@ -684,9 +732,10 @@
         }
         const waitingFee = validateWaitingFee();
         const distanceExtra = validateDistanceExtra();
+        const messageExtra = getMessageExtra();
         const temporaryStopFee = getTemporaryStopFee();
         const tip = validateTip();
-        openLineShare(`${actualKm}/${info.fare + waitingFee + distanceExtra + temporaryStopFee}/${tip}`);
+        openLineShare(`${actualKm}/${info.fare + waitingFee + distanceExtra + messageExtra + temporaryStopFee}/${tip}`);
       }
 
       function shareStatus(button) {
@@ -809,11 +858,13 @@
         $('#manualDistance').value = '';
         $('#waitingFee').value = '0';
         $('#distanceExtra').value = '0';
+        $('#messageExtra').value = '0';
         $('#tip').value = '0';
         state.temporaryStopCount = 0;
         $('#temporaryStopSummary').textContent = '第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0';
         $('#temporaryStopFeeResult').textContent = '$0';
         $('#distanceExtraResult').textContent = '$0';
+        $('#messageExtraResult').textContent = '$0';
         $('#stops').innerHTML = '';
         renumberStops();
         $('#fareEmpty').style.display = 'block';
