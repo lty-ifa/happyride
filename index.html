@@ -299,7 +299,7 @@
             <button id="stopWaiting" class="btn btn-danger" type="button">停止</button>
           </div>
         </div>
-        <p class="hint">待時滿 8 分鐘收 $20；第 9 分鐘起，每增加 1 分鐘＋$5。停止後自動併入最終車資。</p>
+        <p class="hint">待時滿 8 分鐘收 $20，LINE 分享按鈕才會啟用；第 9 分鐘起，每增加 1 分鐘＋$5。停止後自動併入最終車資。</p>
       </section>
 
       <section id="fareCard" class="card" aria-labelledby="fareTitle">
@@ -330,7 +330,8 @@
           <button id="addTemporaryStop" class="btn btn-ghost" type="button">臨停地點＋20</button>
           <button id="resetTemporaryStop" class="btn btn-ghost" type="button">臨停歸零</button>
         </div>
-        <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0</p>
+        <button id="shareTemporaryStop" class="btn btn-line wide" type="button" disabled style="margin-bottom:10px">臨停分享到 LINE</button>
+        <p id="temporaryStopSummary" class="hint" style="margin:0 0 14px">第 3 個地點＋$20，第 4 個地點起每增加 1 個再＋$20。目前 2 個地點，共 $0</p>
         <button id="calculateFinal" class="btn btn-primary wide" type="button" style="margin-bottom:14px">計算最終車資</button>
         <div id="fareEmpty" class="fare-placeholder">先計算初步車資，再視需要加入其他車資加成</div>
         <div id="fareResult" class="result" aria-live="polite">
@@ -654,7 +655,16 @@
       function updateTemporaryStops(change) {
         state.temporaryStopCount = Math.max(0, state.temporaryStopCount + change);
         const fee = getTemporaryStopFee();
-        $('#temporaryStopSummary').textContent = `第 3 個地點起，每增加 1 個地點＋$20。目前 ${state.temporaryStopCount} 個，共 $${fee}`;
+        const totalPoints = state.temporaryStopCount + 2;
+        $('#temporaryStopSummary').textContent = `第 3 個地點＋$20，第 4 個地點起每增加 1 個再＋$20。目前 ${totalPoints} 個地點，共 $${fee}`;
+        $('#shareTemporaryStop').disabled = fee === 0;
+      }
+
+      function shareTemporaryStop() {
+        const fee = getTemporaryStopFee();
+        if (!fee) { toast('目前沒有可回報的臨停費'); return; }
+        const totalPoints = state.temporaryStopCount + 2;
+        openLineShare(`臨停｜${totalPoints}個地點+${fee}`);
       }
 
       function renderFare(actualKm, includeExtras) {
@@ -801,6 +811,15 @@
         const data = state.activeWaiting || state.stoppedWaiting;
         if (!data) return;
         const minutes = state.activeWaiting ? getWaitingMinutes(data.startedAt) : data.minutes;
+        if (minutes < 8) {
+          state.activeWaiting = null;
+          state.stoppedWaiting = null;
+          clearInterval(state.waitingTimer);
+          localStorage.removeItem(STORAGE.waiting);
+          renderWaiting();
+          toast('待時未滿 8 分鐘，已取消且不計費');
+          return;
+        }
         openLineShare(`待時｜${data.address}｜${minutes}分鐘`);
         if (state.stoppedWaiting) {
           state.stoppedWaiting = null;
@@ -813,6 +832,7 @@
         const panel = $('#waitingActive');
         $('#waitingEmpty').style.display = data ? 'none' : 'block';
         panel.classList.toggle('show', Boolean(data));
+        $('#shareWaiting').disabled = true;
         clearInterval(state.waitingTimer);
         if (data) {
           const active = Boolean(state.activeWaiting);
@@ -823,10 +843,12 @@
           $('#waitingCharge').textContent = `目前待時費 $${calculateWaitingFee(minutes)}`;
           $('#stopWaiting').style.display = active ? 'block' : 'none';
           $('#shareWaiting').textContent = active ? '分享目前待時' : '分享本次結果';
+          $('#shareWaiting').disabled = minutes < 8;
           if (active) state.waitingTimer = setInterval(() => {
             const minutes = getWaitingMinutes(state.activeWaiting.startedAt);
             $('#waitingTime').textContent = `${minutes} 分鐘`;
             $('#waitingCharge').textContent = `目前待時費 $${calculateWaitingFee(minutes)}`;
+            $('#shareWaiting').disabled = minutes < 8;
           }, 1000);
         }
         updateWaitingButtons();
@@ -861,7 +883,8 @@
         $('#messageExtra').value = '0';
         $('#tip').value = '0';
         state.temporaryStopCount = 0;
-        $('#temporaryStopSummary').textContent = '第 3 個地點起，每增加 1 個地點＋$20。目前 0 個，共 $0';
+        $('#temporaryStopSummary').textContent = '第 3 個地點＋$20，第 4 個地點起每增加 1 個再＋$20。目前 2 個地點，共 $0';
+        $('#shareTemporaryStop').disabled = true;
         $('#temporaryStopFeeResult').textContent = '$0';
         $('#distanceExtraResult').textContent = '$0';
         $('#messageExtraResult').textContent = '$0';
@@ -885,6 +908,7 @@
       $('#calculateFinal').addEventListener('click', calculateFinalFare);
       $('#addTemporaryStop').addEventListener('click', () => updateTemporaryStops(1));
       $('#resetTemporaryStop').addEventListener('click', () => updateTemporaryStops(-state.temporaryStopCount));
+      $('#shareTemporaryStop').addEventListener('click', shareTemporaryStop);
       $('#recalculate').addEventListener('click', calculateFinalFare);
       $('#navigate').addEventListener('click', openNavigation);
       $('#shareFare').addEventListener('click', shareFareReport);
